@@ -1,35 +1,17 @@
-from datetime import datetime
+import os
+
+from datetime import datetime, timedelta
 from typing import Dict, List
 
 import sqlalchemy
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 import pandas as pd
-from eflips.model import Event, Rotation, Vehicle
-
-
-def rotation_name_for_sorting(rotation_name: str) -> int:
-    """
-    Takes a rotation name, which is a sequence of a string (containing X[0-9]+ or N[0-9]+ or M[0-9]+ or [0-9+])
-    followed by a '/' followed by an integer. The function first makes sure that it is only a single rotation descriptor
-    by discarding everything after the first ' ' character, if it exists. Then it splits the string into two parts and
-    replaces X by 9, N, by 10 in the first part. It then turns both numbers into a string and add leading zeros to the
-    second part, so that the two parts have the same length. It then concatenates the two parts and returns the result as
-    an integer.
-
-    :param rotation_name: The rotation name
-    :return: a sortable integer
-    """
-    if " " in rotation_name:
-        rotation_name = rotation_name.split(" ")[0]
-    rotation_name_parts = rotation_name.split("/")
-    first_part = int(
-        rotation_name_parts[0].replace("X", "9").replace("N", "10").replace("M", "11")
-    )
-    second_part = int(rotation_name_parts[1])
-    return first_part * 1000 + second_part
+from eflips.model import Event, Vehicle, Scenario
 
 
 def departure_arrival_soc(
-    scenario_id: int, session: sqlalchemy.orm.session.Session
+        scenario_id: int, session: sqlalchemy.orm.session.Session
 ) -> pd.DataFrame:
     """
     This function creates a dataframe with the SoC at departure and arrival for each trip.
@@ -101,54 +83,58 @@ def departure_arrival_soc(
     return pd.DataFrame(result)
 
 
-def rotation_info(
-    scenario_id: int, session: sqlalchemy.orm.session.Session
-) -> pd.DataFrame:
+def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
     """
-    This function provides information about the rotations in a scenario. This information can be provided even before
-    the simulation has been run. It creates a dataframe withe the following columns:
+    This function creates a dataframe with all the events at the depot for a given scenario.
+    The columns are
+    - time_start: the start time of the event in datetime format
+    - time_end: the end time of the event in datetime format
+    - vehicle_id: the unique vehicle identifier which could be used for querying the vehicle in the database
+    - event_type: the type of event specified in the eflips model. See :class:`eflips.model.EventType` for more information
+    - area_id: the unique area identifier which could be used for querying the area in the database
+    - trip_id: the unique trip identifier which could be used for querying the trip in the database
+    - station_id: the unique station identifier which could be used for querying the station in the database
+    - location: the location of the event. This could be "depot", "trip" or "station"
 
-    - rotation_id: the id of the rotation
-    - rotation_name: the name of the rotation
-    - vehicle_type_id: the id of the vehicle type
-    - vehicle_type_name: the name of the vehicle type
-    - total_distance: the total distance of the rotation
-    - time_start: the departure of the first trip
-    - time_end: the arrival of the last trip
-    - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
 
-    :param scenario_id: The scenario id for which to create the dataframe
-    :param session: An sqlalchemy session to an eflips-model database
-    :return: a pandas DataFrame
+    :param scenario_id: The unique identifier of the scenario
+    :param session: A :class:`sqlalchemy.orm.session.Session` object to an eflips-model database
+    :return: A pandas DataFrame
     """
 
-    result: List[Dict[str, int | float | str | datetime]] = []
+    event_list_for_plot: List[Dict[str, int | float | str | datetime]] = []
+    events_from_db = (
+        session.query(Event)
+        .filter(Event.scenario_id == scenario_id)
+        .order_by(Event.vehicle_id, Event.time_start)
+        .all()
+    )
 
-    rotations = session.query(Rotation).filter(Rotation.scenario_id == scenario_id)
-    for rotation in rotations:
-        # The rotation distance comes form the routes of the trips
-        distance = 0.0
-        for trip in rotation.trips:
-            distance += trip.route.distance / 1000
+    for event in events_from_db:
 
-        result.append(
+        location = None
+        if event.area_id is not None:
+            location = "depot"
+        elif event.trip_id is not None:
+            location = "trip"
+        elif event.station_id is not None:
+            location = "station"
+        event_list_for_plot.append(
             {
-                "rotation_id": rotation.id,
-                "rotation_name": rotation.name,
-                "vehicle_type_id": rotation.vehicle_type_id,
-                "vehicle_type_name": rotation.vehicle_type.name,
-                "total_distance": distance,
-                "time_start": rotation.trips[0].departure_time,
-                "time_end": rotation.trips[-1].arrival_time,
+                "time_start": event.time_start,
+                "time_end": event.time_end,
+                "vehicle_id": str(event.vehicle_id),
+                "event_type": event.event_type.name,
+                "area_id": event.area_id,
+                "trip_id": event.trip_id,
+                "station_id": event.station_id,
+                "location": location
+
             }
         )
 
-    # We want to properly sort by roation name, which is a bit intricate, as it's a string of two numbers divided by a
-    # '/' character. We can't just sort by the string, as "10/11" would come after "10/1". We need to split the string
-    # into its components and sort by them.
-    df = pd.DataFrame(result)
-    df["line_name"] = [r.split("/")[0] for r in df["rotation_name"]]
+    return pd.DataFrame(event_list_for_plot)
 
-    df.sort_values(by=["line_name", "time_start"], inplace=True)
 
-    return df
+def vehicle_soc(scenario_id: int, session: Session) -> pd.DataFrame:
+    pass
