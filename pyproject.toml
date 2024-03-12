@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "eflips-eval"
+version = "0.1.0"
+description = ""
+authors = [
+    "Ludger Heide <ludger.heide@lhtechnologies.de>", 
+	"Shuyao Guo <shuyao.guo@tu-berlin.de>"
+]
+readme = "README.md"
+packages = [{ include = "eflips/eval" }]
+include= ["LICENSE.md"]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+eflips-model = "^2.3.0"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.7.1"
+black = "^23.11.0"
+pytest = "^7.4.3"
+pytest-pycharm = "^0.7.0"
+pre-commit = "^3.5.0"
+sphinx-autoapi = "^3.0.0"
+sphinx-paramlinks = "^0.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
