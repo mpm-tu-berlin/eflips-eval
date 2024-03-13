@@ -93,16 +93,15 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def depot_event(
-    prepared_data: pd.DataFrame, color_scheme: str = "Event type"
-) -> go.Figure:
+def depot_event(prepared_data: pd.DataFrame, color_scheme: str = "event_type") -> go.Figure:
     """
     This function visualizes all events as a gantt chart using plotly
     :param prepared_data: The result of the depot_event function, a dataframe with the following columns:
     :param color_scheme: A string representing the color scheme to be used in the gantt chart. It can be one of the following:
-    - "Event type"
-    - "SOC"
-    - "Location"
+    - "event_type"
+    - "soc"
+    - "location"
+    see :func:`get_color_scheme` for more information.
 
     - time_start: the start time of the event in datetime format
     - time_end: the end time of the event in datetime format
@@ -135,9 +134,17 @@ def depot_event(
             "soc_start": "Start State of Charge (%)",
             "soc_end": "End State of Charge (%)",
             "area_id": "Area ID",
+            "vehicle_id": "Vehicle ID",
         },
     )
-    fig.update_layout(legend={"orientation": "h", "y": 1.02, "title": "Event Type"})
+    if color_scheme == "soc":
+        legend_title = "State of Charge"
+    else:
+        legend_title = color_scheme.replace("_", " ").title()
+
+    fig.update_xaxes(title_text="Time")
+    fig.update_yaxes(title_text="Vehicles", secondary_y=False)
+    fig.update_layout(legend={"title": legend_title}, yaxis={"showticklabels": False})
 
     return fig
 

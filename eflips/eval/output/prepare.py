@@ -112,17 +112,20 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
     for event in events_from_db:
         location = None
         if event.area_id is not None:
-            location = "depot"
+            location = "Depot"
         elif event.trip_id is not None:
-            location = "trip"
+            location = "Trip"
         elif event.station_id is not None:
-            location = "station"
+            location = "Station"
+
         event_list_for_plot.append(
             {
                 "time_start": event.time_start,
                 "time_end": event.time_end,
+                "soc_start": event.soc_start,
+                "soc_end": event.soc_end,
                 "vehicle_id": str(event.vehicle_id),
-                "event_type": event.event_type.name,
+                "event_type": event.event_type.name.replace("_", " ").title(),
                 "area_id": event.area_id,
                 "trip_id": event.trip_id,
                 "station_id": event.station_id,
