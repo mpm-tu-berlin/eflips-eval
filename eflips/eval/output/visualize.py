@@ -12,9 +12,9 @@ def get_color_scheme(
     """
     This function returns a dictionary with the color scheme to be used in the gantt chart
     :param color_scheme: A string representing the color scheme to be used in the gantt chart. It can be one of the following:
-    - "Event type"
-    - "SOC"
-    - "Location"
+    - "event_type"
+    - "soc"
+    - "location"
     :return: A dictionary with the color scheme
     """
     color = None
@@ -22,27 +22,33 @@ def get_color_scheme(
     color_continuous_scale = None
 
     match color_scheme:
-        case "Event type":
+        case "event_type":
             color = "event_type"
             color_discrete_map = {
-                "CHARGING_DEPOT": "forestgreen",
-                "DRIVING": "skyblue",
-                "SERVICE": "salmon",
-                "STANDBY_DEPARTURE": "orange",
+                "Charging Depot": "forestgreen",
+                "Charging Opportunity": "lightgreen",
+                "Driving": "skyblue",
+                "Service": "salmon",
+                "Standby Departure": "orange",
+                "Standby": "lightcoral",
+                "Precondition": "lightgrey",
+
             }
             color_continuous_scale = ""
-        case "SOC":
+        case "soc":
             color = "soc_end"
             color_discrete_map = None
             color_continuous_scale = px.colors.sequential.Viridis
-        case "Location":
+        case "location":
             color = "location"
             color_discrete_map = {
-                "depot": "salmon",
-                "trip": "forestgreen",
-                "station": "steelblue",
+                "Depot": "salmon",
+                "Trip": "forestgreen",
+                "Station": "steelblue",
             }
             color_continuous_scale = ""
+        case _:
+            raise ValueError("Invalid color scheme")
 
     color_scheme_dict = {
         "color": color,
