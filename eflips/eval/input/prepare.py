@@ -30,7 +30,7 @@ def rotation_name_for_sorting(rotation_name: str) -> int:
 
 
 def rotation_info(
-        scenario_id: int, session: sqlalchemy.orm.session.Session
+    scenario_id: int, session: sqlalchemy.orm.session.Session
 ) -> pd.DataFrame:
     """
     This function provides information about the rotations in a scenario. This information can be provided even before

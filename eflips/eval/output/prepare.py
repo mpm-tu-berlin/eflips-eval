@@ -11,7 +11,7 @@ from eflips.model import Event, Vehicle, Scenario
 
 
 def departure_arrival_soc(
-        scenario_id: int, session: sqlalchemy.orm.session.Session
+    scenario_id: int, session: sqlalchemy.orm.session.Session
 ) -> pd.DataFrame:
     """
     This function creates a dataframe with the SoC at departure and arrival for each trip.
@@ -111,7 +111,6 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
     )
 
     for event in events_from_db:
-
         location = None
         if event.area_id is not None:
             location = "depot"
@@ -128,8 +127,7 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
                 "area_id": event.area_id,
                 "trip_id": event.trip_id,
                 "station_id": event.station_id,
-                "location": location
-
+                "location": location,
             }
         )
 

@@ -88,7 +88,9 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def depot_event(prepared_data: pd.DataFrame, color_scheme: str = "Event type") -> go.Figure:
+def depot_event(
+    prepared_data: pd.DataFrame, color_scheme: str = "Event type"
+) -> go.Figure:
     """
     This function visualizes all events as a gantt chart using plotly
     :param prepared_data: The result of the depot_event function, a dataframe with the following columns:
