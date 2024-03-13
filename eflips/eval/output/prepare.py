@@ -45,7 +45,7 @@ def departure_arrival_soc(
         )
         for i in range(len(events)):
             # The interesting events for us are the ones immediately before or after an event at a depot.
-            # That meand the previous or nect event has an area_id, the event does not
+            # That means the previous or next event has an area_id, the event does not
 
             if events[i].area_id is None:
                 if i > 0 and events[i - 1].area_id is not None:
