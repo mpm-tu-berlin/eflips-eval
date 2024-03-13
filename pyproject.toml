@@ -19,13 +19,16 @@ plotly = "^5.19.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.7.1"
-black = "^23.11.0"
+black = "^24.2.0"
 pytest = "^7.4.3"
 pytest-pycharm = "^0.7.0"
 pre-commit = "^3.5.0"
 sphinx-autoapi = "^3.0.0"
 sphinx-paramlinks = "^0.6.0"
 pandas-stubs = "^2.2.0.240218"
+
+[tool.mypy]
+plugins = "numpy.typing.mypy_plugin"
 
 [build-system]
 requires = ["poetry-core"]

@@ -23,6 +23,11 @@ if __name__ == "__main__":
     fig = output_visualize.power_and_occupancy(prepared_data)
     fig.show()
 
+    # Example of the specific energy consumption visualization
+    prepared_data = output_prepare.specific_energy_consumption(SCENARIO_ID, session)
+    fig = output_visualize.specific_energy_consumption(prepared_data)
+    fig.show()
+
     # Example of using the arrival and departure SoC visualization
     prepared_data = output_prepare.departure_arrival_soc(SCENARIO_ID, session)
     fig = output_visualize.departure_arrival_soc(prepared_data)

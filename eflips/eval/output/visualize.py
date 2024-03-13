@@ -173,5 +173,40 @@ def power_and_occupancy(prepared_data: pd.DataFrame) -> go.Figure:
     return fig
 
 
+def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
+    """
+    Creates a histogram of the specific energy consumption of the vehicles, colored by vehicle type
+    :param prepared_data: A DataFrame with the following columns:
+        - trip_id: the unique identifier of the trip
+        - route_id: the unique identifier of the route
+        - route_name: the name of the route
+        - distance: the distance of the route in km
+        - energy_consumption: the energy consumption of the trip in kWh
+        - vehicle_type_id: the unique identifier of the vehicle type
+        - vehicle_type_name: the name of the vehicle type
+    :return: a plotly figure object
+    """
+    prepared_data["specific_energy_consumption"] = (
+        prepared_data["energy_consumption"] / prepared_data["distance"]
+    )
+    bin_count = prepared_data.shape[0] // 10
+    fig = go.Figure()
+    for vehicle_type_name, data in prepared_data.groupby("vehicle_type_name"):
+        fig.add_trace(
+            go.Histogram(x=data["specific_energy_consumption"], name=vehicle_type_name)
+        )
+
+    # Overlay both histograms
+    fig.update_layout(
+        barmode="overlay",
+        xaxis_title="Specific Energy Consumption (kWh/km)",
+        yaxis_title="Count",
+    )
+    # Reduce opacity to see both histograms
+    fig.update_traces(opacity=0.75)
+    fig.show()
+    return fig
+
+
 def vehicle_soc(prepared_data: pd.DataFrame) -> go.Figure:
     pass

@@ -101,7 +101,7 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
     :return: A pandas DataFrame
     """
 
-    event_list_for_plot: List[Dict[str, int | float | str | datetime]] = []
+    event_list_for_plot: List[Dict[str, int | float | str | datetime | None]] = []
     events_from_db = (
         session.query(Event)
         .filter(Event.scenario_id == scenario_id)
@@ -253,6 +253,47 @@ def power_and_occupancy(
         }
     )
     return result
+
+
+def specific_energy_consumption(scenario_id: int, session: Session) -> pd.DataFrame:
+    """
+    Creates a dataframe of all the trip energy consumptions and distances for the given scenario.
+    The dataframe contains the following columns:
+    - trip_id: the unique identifier of the trip
+    - route_id: the unique identifier of the route
+    - route_name: the name of the route
+    - distance: the distance of the route in km
+    - energy_consumption: the energy consumption of the trip in kWh
+    - vehicle_type_id: the unique identifier of the vehicle type
+    - vehicle_type_name: the name of the vehicle type
+
+    :param scenario_id: The unique identifier of the scenario
+    :param session: An sqlalchemy session to an eflips-model database
+    :return: A pandas DataFrame
+    """
+    events = (
+        session.query(Event)
+        .filter(Event.scenario_id == scenario_id)
+        .filter(Event.event_type == EventType.DRIVING)
+        .options(sqlalchemy.orm.joinedload(Event.trip).joinedload(Trip.route))
+    )
+    result: List[Dict[str, int | float | str]] = []
+    for event in events:
+        trip = event.trip
+        delta_soc = event.soc_end - event.soc_start
+        delta_energy = delta_soc * trip.rotation.vehicle_type.battery_capacity * -1
+        result.append(
+            {
+                "trip_id": trip.id,
+                "route_id": trip.route_id,
+                "route_name": trip.route.name,
+                "distance": trip.route.distance / 1000,
+                "energy_consumption": delta_energy,
+                "vehicle_type_id": trip.rotation.vehicle_type_id,
+                "vehicle_type_name": trip.rotation.vehicle_type.name,
+            }
+        )
+    return pd.DataFrame(result)
 
 
 def vehicle_soc(scenario_id: int, session: Session) -> pd.DataFrame:
