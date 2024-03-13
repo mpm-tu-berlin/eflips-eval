@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px  # type: ignore
 import plotly.graph_objs as go  # type: ignore
+from plotly.subplots import make_subplots
 
 
 def get_color_scheme(color_scheme: str) -> dict:
@@ -134,6 +135,37 @@ def depot_event(
     )
     fig.update_layout(legend={"orientation": "h", "y": 1.02, "title": "Event Type"})
 
+    return fig
+
+
+def power_and_occupancy(prepared_data: pd.DataFrame) -> go.Figure:
+    """
+    This function visualizes the power and occupancy using plotly
+    :param prepared_data: The result of the power_and_occupancy function, a dataframe with the following columns:
+
+    - time: the time at which the power and occupancy was recorded
+    - power: the power at the given time
+    - occupancy: the occupancy at the given time
+
+    :return: A plotly figure object
+    """
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Scatter(x=prepared_data["time"], y=prepared_data["power"], name="Power"),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=prepared_data["time"], y=prepared_data["occupancy"], name="Occupancy"
+        ),
+        secondary_y=True,
+    )
+    # Set x-axis title
+    fig.update_xaxes(title_text="Time")
+
+    # Set y-axes titles
+    fig.update_yaxes(title_text="Power (kW)", secondary_y=False)
+    fig.update_yaxes(title_text="Number of Vehicles in Depot", secondary_y=True)
     return fig
 
 

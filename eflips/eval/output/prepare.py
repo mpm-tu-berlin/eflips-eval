@@ -1,8 +1,10 @@
+import json
 import os
 
-from datetime import datetime, timedelta
-from typing import Dict, List
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Iterable
 
+import numpy as np
 import sqlalchemy
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -132,6 +134,122 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
         )
 
     return pd.DataFrame(event_list_for_plot)
+
+
+def power_and_occupancy(
+    aread_id: int | Iterable[int],
+    session: sqlalchemy.orm.session.Session,
+    temporal_resolution: int = 60,
+) -> pd.DataFrame:
+    """
+    This function creates a dataframe containing a timeseries of the power and occupancy of the given area(s).
+    The columns are:
+    - time: the time at which the data was recorded
+    - power: the summed power consumption of the area(s) at the given time
+    - occupancy: the summed occupancy of the area(s) at the given time
+
+    :param aread_id: The id of the area for which to create the dataframe
+    :param session: An sqlalchemy session to an eflips-model database
+    :param temporal_resolution: The temporal resolution of the timeseries in seconds. Default is 60 seconds.
+    :return: A pandas DataFrame
+    """
+    events = session.query(Event).filter(Event.area_id.in_(aread_id))
+
+    start_time = (
+        session.query(Event.time_start)
+        .filter(Event.area_id.in_(aread_id))
+        .order_by(Event.time_start)
+        .first()[0]
+    )
+    end_time = (
+        session.query(Event.time_end)
+        .filter(Event.area_id.in_(aread_id))
+        .order_by(Event.time_end.desc())
+        .first()[0]
+    )
+
+    # Round the start and end times to the nearest temporal_resolution
+    start_time = start_time - timedelta(seconds=start_time.second % temporal_resolution)
+    end_time = end_time + timedelta(
+        seconds=temporal_resolution - end_time.second % temporal_resolution
+    )
+
+    # Create a 1-second interval time series
+    time = np.arange(start_time, end_time, timedelta(seconds=temporal_resolution))
+    time_as_unix = np.arange(
+        start_time.timestamp(), end_time.timestamp(), temporal_resolution
+    )
+    energy = np.zeros(len(time))
+    occupancy = np.zeros(len(time))
+
+    # For each event:
+    # Convert SoC to energy
+    # Resample to 1-second intervals
+    # Add the energy to the energy series
+    for event in events:
+        if event.timeseries is not None:
+            # Timeseries is an otional JSON containing a dict of
+            # "time" list: ISO8601 formatted strings
+            # "soc" list: float (0-1
+            timeseries = json.loads(event.timeseries)
+            this_event_times = [datetime.fromisoformat(t) for t in timeseries["time"]]
+            this_event_socs = timeseries["soc"]
+        else:
+            this_event_times = []
+            this_event_socs = []
+        # Attach the event's time_start and soc to the timeseries at the beginning
+        this_event_times.insert(0, event.time_start)
+        this_event_socs.insert(0, event.soc_start)
+        # Attach the event's time_end and soc to the timeseries at the end
+        this_event_times.append(event.time_end)
+        this_event_socs.append(event.soc_end)
+        this_event_unix_times = np.array([t.timestamp() for t in this_event_times])
+
+        # Validation: the timeseries should be sorted and the socs should be in the range [0, 1] and monotonically increasing
+        assert all(
+            this_event_times[i] <= this_event_times[i + 1]
+            for i in range(len(this_event_times) - 1)
+        )
+        assert all(0 <= this_event_socs[i] <= 1 for i in range(len(this_event_socs)))
+        assert all(
+            this_event_socs[i] <= this_event_socs[i + 1]
+            for i in range(len(this_event_socs) - 1)
+        )
+
+        # Convert from SoC to enerhgy using the vehicle types battery capacity
+        this_event_energy = (
+            np.array(this_event_socs) * event.vehicle.vehicle_type.battery_capacity
+        )  # kWh
+
+        # Resample the energy to 1-second intervals
+        this_event_energy = np.interp(
+            time_as_unix, this_event_unix_times, this_event_energy
+        )
+        energy += this_event_energy
+
+        # For occupancy, we we create an entry at the beginning and end of the event, then resample to 1-second intervals
+        # with left=0 and right=0
+        this_event_occupancy = np.interp(
+            time_as_unix,
+            [event.time_start.timestamp(), event.time_end.timestamp()],
+            [1, 1],
+            left=0,
+            right=0,
+        )
+        occupancy += this_event_occupancy
+
+    # Calculate the power from the energy
+    power = (np.diff(energy) / np.diff(time_as_unix).astype(float)) * 3600  # kW
+
+    # Create the dataframe
+    result = pd.DataFrame(
+        {
+            "time": time[1:],
+            "power": power,
+            "occupancy": occupancy[1:],
+        }
+    )
+    return result
 
 
 def vehicle_soc(scenario_id: int, session: Session) -> pd.DataFrame:
