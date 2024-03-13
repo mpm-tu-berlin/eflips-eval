@@ -299,5 +299,50 @@ def specific_energy_consumption(scenario_id: int, session: Session) -> pd.DataFr
     return pd.DataFrame(result)
 
 
-def vehicle_soc(scenario_id: int, session: Session) -> pd.DataFrame:
-    raise NotImplementedError("Not implemented yet")
+def vehicle_soc(vehicle_id: int, session: Session) -> pd.DataFrame:
+    """
+    This function takes in a vehicle id and returns a dataframe with the SoC of the vehicle at different times. This
+    dataframe has the following columns:
+    - time: the time at which the SoC was recorded
+    - soc: the state of charge at the given time
+    - event_type: the type of event at the given time. See :class:`eflips.model.EventType` for more information
+    - location: the location of the event at the given time. This could be "depot", "trip" or "station"
+    :param vehicle_id: the unique identifier of the vehicle
+    :param session: A :class:`sqlalchemy.orm.session.Session` object to an eflips-model database
+    :return: A pandas DataFrame
+    """
+    events_from_db = (
+        session.query(Event)
+        .filter(Event.vehicle_id == vehicle_id)
+        .order_by(Event.time_start)
+        .all()
+    )
+    # Go through all events and connect the soc_start and soc_end and time_start and time_end
+    all_times = []
+    all_soc = []
+    all_events = []
+    all_locations = []
+    for event in events_from_db:
+        all_times.append(event.time_start)
+        all_times.append(event.time_end)
+        all_soc.append(event.soc_start)
+        all_soc.append(event.soc_end)
+
+        # Assign the event type to both start and end time
+        all_events.append(event.event_type.name.replace("_", " ").title())
+        all_events.append(event.event_type.name.replace("_", " ").title())
+
+        # Assign a location to each event
+        location = None
+        if event.area_id is not None:
+            location = "Depot"
+        elif event.trip_id is not None:
+            location = "Trip"
+        elif event.station_id is not None:
+            location = "Station"
+
+        # Assign the event location to both start and end time
+        all_locations.append(location)
+        all_locations.append(location)
+
+    return pd.DataFrame({"time": all_times, "soc": all_soc, "event_type": all_events, "location": all_locations})

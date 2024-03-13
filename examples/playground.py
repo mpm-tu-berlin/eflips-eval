@@ -1,6 +1,6 @@
 import os
 
-from eflips.model import Area
+from eflips.model import Area, Vehicle
 
 import eflips.eval.input.prepare as input_prepare
 import eflips.eval.output.prepare as output_prepare
@@ -41,4 +41,10 @@ if __name__ == "__main__":
     # Example of using the depot event visualization
     prepared_data = output_prepare.depot_event(SCENARIO_ID, session)
     fig = output_visualize.depot_event(prepared_data)
+    fig.show()
+    #
+    # Example of using the vehicle soc visualization
+    example_vehicle_id = session.query(Vehicle.id).filter(Vehicle.scenario_id == SCENARIO_ID).first()[0]
+    prepared_data = output_prepare.vehicle_soc(example_vehicle_id, session)
+    fig = output_visualize.vehicle_soc(prepared_data, "event_type")
     fig.show()

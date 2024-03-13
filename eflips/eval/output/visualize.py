@@ -221,5 +221,44 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def vehicle_soc(prepared_data: pd.DataFrame) -> go.Figure:
-    pass
+def vehicle_soc(prepared_data: pd.DataFrame, color_scheme: Optional[str] = None) -> go.Figure:
+    """
+    This function visualizes the state of charge of a vehicle over time using plotly. Optionally, it can also visualize
+    event types or event locations by vertical rectangles.
+    :param color_scheme: A string representing the color scheme to render event properties. It can be one of the following:
+    - "event_type"
+    - "location"
+    see :func:`get_color_scheme` for more information.
+    :param prepared_data: A dataframe with the following columns:
+    - time: the time at which the SoC was recorded
+    - soc: the state of charge at the given time
+    - event_type: the type of event that occurred at the given time
+    - location: the location of the event that occurred at the given time
+    :return: A plotly figure object
+    """
+
+    fig = px.line(
+        prepared_data,
+        x="time",
+        y="soc",
+        labels={"time": "Time", "soc": "State of Charge (%)"},
+    )
+
+    if color_scheme is not None:
+        color_scheme_dict = get_color_scheme(color_scheme)
+        color_discrete_map = color_scheme_dict["color_discrete_map"]
+        legend_rendering_dict = {key: True for key in color_discrete_map.keys()}
+
+        for i in range(0, len(prepared_data) - 1, 2):
+            col_index = prepared_data.columns.get_loc(color_scheme)
+            event_color = color_discrete_map[prepared_data.iloc[i, col_index]]
+
+            fig.add_vrect(name=prepared_data.iloc[i, col_index], x0=prepared_data.iloc[i, 0],
+                          x1=prepared_data.iloc[i + 1, 0],
+                          line_width=0, fillcolor=event_color,
+                          opacity=0.25, showlegend=legend_rendering_dict[prepared_data.iloc[i, col_index]])
+            legend_rendering_dict[prepared_data.iloc[i, col_index]] = False
+
+        fig.update_legends(title_text=color_scheme.replace("_", " ").title())
+
+    return fig
