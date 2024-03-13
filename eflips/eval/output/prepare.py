@@ -1,15 +1,12 @@
-import json
-import os
-
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Dict, List, Iterable
 
 import numpy as np
-import sqlalchemy
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+import numpy.typing as npt
 import pandas as pd
-from eflips.model import Event, Vehicle, Scenario
+import sqlalchemy
+from eflips.model import Event, Vehicle, Trip, EventType
+from sqlalchemy.orm import Session
 
 
 def departure_arrival_soc(
@@ -153,20 +150,28 @@ def power_and_occupancy(
     :param temporal_resolution: The temporal resolution of the timeseries in seconds. Default is 60 seconds.
     :return: A pandas DataFrame
     """
+    if isinstance(aread_id, int):
+        aread_id = [aread_id]
     events = session.query(Event).filter(Event.area_id.in_(aread_id))
 
-    start_time = (
+    start_time_row = (
         session.query(Event.time_start)
         .filter(Event.area_id.in_(aread_id))
         .order_by(Event.time_start)
-        .first()[0]
+        .first()
     )
-    end_time = (
+    if start_time_row is None:
+        raise ValueError("No events found for the given area_id")
+    start_time = start_time_row[0]  # Oh, if we had nullability operators in Python…
+    end_time_row = (
         session.query(Event.time_end)
         .filter(Event.area_id.in_(aread_id))
         .order_by(Event.time_end.desc())
-        .first()[0]
+        .first()
     )
+    if end_time_row is None:
+        raise ValueError("No events found for the given area_id")
+    end_time = end_time_row[0]  # Oh, if we had nullability operators in Python…
 
     # Round the start and end times to the nearest temporal_resolution
     start_time = start_time - timedelta(seconds=start_time.second % temporal_resolution)
@@ -175,12 +180,14 @@ def power_and_occupancy(
     )
 
     # Create a 1-second interval time series
-    time = np.arange(start_time, end_time, timedelta(seconds=temporal_resolution))
+    time: npt.NDArray[np.datetime64] = np.arange(
+        start_time, end_time, timedelta(seconds=temporal_resolution)
+    )
     time_as_unix = np.arange(
         start_time.timestamp(), end_time.timestamp(), temporal_resolution
     )
-    energy = np.zeros(len(time))
-    occupancy = np.zeros(len(time))
+    energy = np.zeros(time.shape[0])
+    occupancy = np.zeros(time.shape[0])
 
     # For each event:
     # Convert SoC to energy
@@ -188,12 +195,8 @@ def power_and_occupancy(
     # Add the energy to the energy series
     for event in events:
         if event.timeseries is not None:
-            # Timeseries is an otional JSON containing a dict of
-            # "time" list: ISO8601 formatted strings
-            # "soc" list: float (0-1
-            timeseries = json.loads(event.timeseries)
-            this_event_times = [datetime.fromisoformat(t) for t in timeseries["time"]]
-            this_event_socs = timeseries["soc"]
+            this_event_times: List[datetime] = [datetime.fromisoformat(t) for t in event.timeseries["time"]]  # type: ignore
+            this_event_socs: List[float] = event.timeseries["soc"]  # type: ignore
         else:
             this_event_times = []
             this_event_socs = []
@@ -253,4 +256,4 @@ def power_and_occupancy(
 
 
 def vehicle_soc(scenario_id: int, session: Session) -> pd.DataFrame:
-    pass
+    raise NotImplementedError("Not implemented yet")

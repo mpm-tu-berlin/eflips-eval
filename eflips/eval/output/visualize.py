@@ -1,10 +1,14 @@
+from typing import Dict
+
 import pandas as pd
 import plotly.express as px  # type: ignore
 import plotly.graph_objs as go  # type: ignore
-from plotly.subplots import make_subplots
+from plotly.subplots import make_subplots  # type: ignore
 
 
-def get_color_scheme(color_scheme: str) -> dict:
+def get_color_scheme(
+    color_scheme: str,
+) -> Dict[str, str | Dict[str, str] | str | px.colors.sequential]:
     """
     This function returns a dictionary with the color scheme to be used in the gantt chart
     :param color_scheme: A string representing the color scheme to be used in the gantt chart. It can be one of the following:
