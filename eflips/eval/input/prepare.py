@@ -17,7 +17,8 @@ def rotation_name_for_sorting(rotation_name: str) -> str:
     :param rotation_name: The rotation name
     :return: a sortable string
     """
-    if "/" in rotation_name:
+
+    if rotation_name is not None and "/" in rotation_name:
         return rotation_name.split("/")[0]
     else:
         return rotation_name
