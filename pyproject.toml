@@ -3,7 +3,7 @@ name = "eflips-eval"
 version = "0.1.0"
 description = ""
 authors = [
-    "Ludger Heide <ludger.heide@lhtechnologies.de>", 
+    "Ludger Heide <ludger.heide@lhtechnologies.de>",
 	"Shuyao Guo <shuyao.guo@tu-berlin.de>"
 ]
 readme = "README.md"
@@ -13,8 +13,8 @@ include= ["LICENSE.md"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-eflips-model = "^2.3.0"
-pandas = "^2.2.1"
+eflips-model = "^3.1.0"
+pandas = "^2.1.4"
 plotly = "^5.19.0"
 
 [tool.poetry.group.dev.dependencies]
