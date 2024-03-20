@@ -7,30 +7,26 @@ import pandas as pd
 from eflips.model import Rotation
 
 
-def rotation_name_for_sorting(rotation_name: str) -> int:
+def rotation_name_for_sorting(rotation_name: str) -> str:
     """
-    Takes a rotation name, which is a sequence of a string (containing X[0-9]+ or N[0-9]+ or M[0-9]+ or [0-9+])
-    followed by a '/' followed by an integer. The function first makes sure that it is only a single rotation descriptor
-    by discarding everything after the first ' ' character, if it exists. Then it splits the string into two parts and
-    replaces X by 9, N, by 10 in the first part. It then turns both numbers into a string and add leading zeros to the
-    second part, so that the two parts have the same length. It then concatenates the two parts and returns the result as
-    an integer.
+    Takes a rotation name, which in the BVG is a string of two numbers separated by a '/' character, and returns a string
+    that can be used for sorting. The first part of the string is returned for BVG rotations.
+
+    Other rotation names are not supported and will return the rotation name itself.
 
     :param rotation_name: The rotation name
-    :return: a sortable integer
+    :return: a sortable string
     """
-    if " " in rotation_name:
-        rotation_name = rotation_name.split(" ")[0]
-    rotation_name_parts = rotation_name.split("/")
-    first_part = int(
-        rotation_name_parts[0].replace("X", "9").replace("N", "10").replace("M", "11")
-    )
-    second_part = int(rotation_name_parts[1])
-    return first_part * 1000 + second_part
+    if "/" in rotation_name:
+        return rotation_name.split("/")[0]
+    else:
+        return rotation_name
 
 
 def rotation_info(
-    scenario_id: int, session: sqlalchemy.orm.session.Session
+    scenario_id: int,
+    session: sqlalchemy.orm.session.Session,
+    rotation_ids: None | int | List[int] = None,
 ) -> pd.DataFrame:
     """
     This function provides information about the rotations in a scenario. This information can be provided even before
@@ -47,12 +43,19 @@ def rotation_info(
 
     :param scenario_id: The scenario id for which to create the dataframe
     :param session: An sqlalchemy session to an eflips-model database
+    :param rotation_ids: A list of rotation ids to filter for. If None, all rotations are included
     :return: a pandas DataFrame
     """
 
     result: List[Dict[str, int | float | str | datetime]] = []
 
     rotations = session.query(Rotation).filter(Rotation.scenario_id == scenario_id)
+
+    if rotation_ids is not None:
+        if isinstance(rotation_ids, int):
+            rotation_ids = [rotation_ids]
+        rotations = rotations.filter(Rotation.id.in_(rotation_ids))
+
     for rotation in rotations:
         # The rotation distance comes form the routes of the trips
         distance = 0.0
@@ -75,7 +78,7 @@ def rotation_info(
     # '/' character. We can't just sort by the string, as "10/11" would come after "10/1". We need to split the string
     # into its components and sort by them.
     df = pd.DataFrame(result)
-    df["line_name"] = [r.split("/")[0] for r in df["rotation_name"]]
+    df["line_name"] = df["rotation_name"].apply(rotation_name_for_sorting)
 
     df.sort_values(by=["line_name", "time_start"], inplace=True)
 

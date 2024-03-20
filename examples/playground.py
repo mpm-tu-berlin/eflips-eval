@@ -12,7 +12,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 if __name__ == "__main__":
-    engine = create_engine(os.environ.get("DATABASE_URL"))
+    if (
+        "DATABASE_URL" not in os.environ
+        or os.environ["DATABASE_URL"] is None
+        or os.environ["DATABASE_URL"] == ""
+    ):
+        raise ValueError(
+            "The database url must be specified either as an argument or as the environment variable DATABASE_URL."
+        )
+    engine = create_engine(os.environ["DATABASE_URL"])
     session = Session(engine)
     SCENARIO_ID = 8
 
@@ -40,11 +48,20 @@ if __name__ == "__main__":
 
     # Example of using the depot event visualization
     prepared_data = output_prepare.depot_event(SCENARIO_ID, session)
-    fig = output_visualize.depot_event(prepared_data)
+    fig = output_visualize.depot_event(
+        prepared_data,
+    )
     fig.show()
     #
     # Example of using the vehicle soc visualization
-    example_vehicle_id = session.query(Vehicle.id).filter(Vehicle.scenario_id == SCENARIO_ID).first()[0]
-    prepared_data = output_prepare.vehicle_soc(example_vehicle_id, session)
-    fig = output_visualize.vehicle_soc(prepared_data, "event_type")
+    example_vehicle_id = (
+        session.query(Vehicle.id)
+        .filter(Vehicle.scenario_id == SCENARIO_ID)
+        .limit(1)
+        .one()[0]
+    )
+    prepared_data, descriptions = output_prepare.vehicle_soc(
+        example_vehicle_id, session
+    )
+    fig = output_visualize.vehicle_soc(prepared_data, descriptions)
     fig.show()

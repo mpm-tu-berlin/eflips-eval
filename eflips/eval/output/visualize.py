@@ -1,4 +1,5 @@
-from typing import Dict, Optional
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 import plotly.express as px  # type: ignore
@@ -32,7 +33,6 @@ def get_color_scheme(
                 "Standby Departure": "orange",
                 "Standby": "lightcoral",
                 "Precondition": "lightgrey",
-
             }
             color_continuous_scale = ""
         case "soc":
@@ -99,7 +99,9 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def depot_event(prepared_data: pd.DataFrame, color_scheme: str = "event_type") -> go.Figure:
+def depot_event(
+    prepared_data: pd.DataFrame, color_scheme: str = "event_type"
+) -> go.Figure:
     """
     This function visualizes all events as a gantt chart using plotly
     :param prepared_data: The result of the depot_event function, a dataframe with the following columns:
@@ -134,6 +136,7 @@ def depot_event(prepared_data: pd.DataFrame, color_scheme: str = "event_type") -
         color=color,
         color_discrete_map=color_discrete_map,
         color_continuous_scale=color_continuous_scale,
+        pattern_shape="vehicle_type_name",
         labels={
             "time_start": "Start Time",
             "time_end": "End Time",
@@ -221,19 +224,24 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def vehicle_soc(prepared_data: pd.DataFrame, color_scheme: Optional[str] = None) -> go.Figure:
+def vehicle_soc(
+    prepared_data: pd.DataFrame,
+    descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
+) -> go.Figure:
     """
     This function visualizes the state of charge of a vehicle over time using plotly. Optionally, it can also visualize
     event types or event locations by vertical rectangles.
-    :param color_scheme: A string representing the color scheme to render event properties. It can be one of the following:
-    - "event_type"
-    - "location"
-    see :func:`get_color_scheme` for more information.
     :param prepared_data: A dataframe with the following columns:
     - time: the time at which the SoC was recorded
     - soc: the state of charge at the given time
-    - event_type: the type of event that occurred at the given time
-    - location: the location of the event that occurred at the given time
+
+    :param descriptions: A dictionary with the following keys
+    - "trip": A list of route names and the time the trip started and ended
+    - "rotation": A list of rotation names and the time the rotation started and ended
+    - "charging": A list of the location of the charging and the time the charging started and ended
+    for each key, the value is a list of tuples with the following structure:
+    - (name, start_time, end_time)
+
     :return: A plotly figure object
     """
 
@@ -244,21 +252,18 @@ def vehicle_soc(prepared_data: pd.DataFrame, color_scheme: Optional[str] = None)
         labels={"time": "Time", "soc": "State of Charge (%)"},
     )
 
-    if color_scheme is not None:
-        color_scheme_dict = get_color_scheme(color_scheme)
-        color_discrete_map = color_scheme_dict["color_discrete_map"]
-        legend_rendering_dict = {key: True for key in color_discrete_map.keys()}
+    colors = ["red", "green", "blue"]
 
-        for i in range(0, len(prepared_data) - 1, 2):
-            col_index = prepared_data.columns.get_loc(color_scheme)
-            event_color = color_discrete_map[prepared_data.iloc[i, col_index]]
-
-            fig.add_vrect(name=prepared_data.iloc[i, col_index], x0=prepared_data.iloc[i, 0],
-                          x1=prepared_data.iloc[i + 1, 0],
-                          line_width=0, fillcolor=event_color,
-                          opacity=0.25, showlegend=legend_rendering_dict[prepared_data.iloc[i, col_index]])
-            legend_rendering_dict[prepared_data.iloc[i, col_index]] = False
-
-        fig.update_legends(title_text=color_scheme.replace("_", " ").title())
-
+    for event_type, event_list in descriptions.items():
+        color = colors.pop(0)
+        for event in event_list:
+            fig.add_vrect(
+                x0=event[1],
+                x1=event[2],
+                line_width=0,
+                fillcolor=color,
+                opacity=0.25,
+                annotation_text=event[0],
+                annotation_textangle=270,
+            )
     return fig

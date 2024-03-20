@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Iterable
+from typing import Dict, List, Iterable, Tuple
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import sqlalchemy
-from eflips.model import Event, Vehicle, Trip, EventType
+from eflips.model import Event, Rotation, Vehicle, Trip, EventType
 from sqlalchemy.orm import Session
 
 
@@ -82,7 +82,9 @@ def departure_arrival_soc(
     return pd.DataFrame(result)
 
 
-def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
+def depot_event(
+    scenario_id: int, session: Session, vehicle_ids: None | int | List[int] = None
+) -> pd.DataFrame:
     """
     This function creates a dataframe with all the events at the depot for a given scenario.
     The columns are
@@ -98,16 +100,23 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
 
     :param scenario_id: The unique identifier of the scenario
     :param session: A :class:`sqlalchemy.orm.session.Session` object to an eflips-model database
+    :param vehicle_ids: A list of vehicle ids to filter for. If None, all vehicles are included
     :return: A pandas DataFrame
     """
 
     event_list_for_plot: List[Dict[str, int | float | str | datetime | None]] = []
-    events_from_db = (
+    events_from_db_q = (
         session.query(Event)
         .filter(Event.scenario_id == scenario_id)
         .order_by(Event.vehicle_id, Event.time_start)
-        .all()
     )
+
+    if vehicle_ids is not None:
+        if isinstance(vehicle_ids, int):
+            vehicle_ids = [vehicle_ids]
+        events_from_db_q = events_from_db_q.filter(Event.vehicle_id.in_(vehicle_ids))
+
+    events_from_db = events_from_db_q.all()
 
     for event in events_from_db:
         location = None
@@ -125,6 +134,8 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
                 "soc_start": event.soc_start,
                 "soc_end": event.soc_end,
                 "vehicle_id": str(event.vehicle_id),
+                "vehicle_type_id": event.vehicle.vehicle_type_id,
+                "vehicle_type_name": event.vehicle.vehicle_type.name,
                 "event_type": event.event_type.name.replace("_", " ").title(),
                 "area_id": event.area_id,
                 "trip_id": event.trip_id,
@@ -133,7 +144,10 @@ def depot_event(scenario_id: int, session: Session) -> pd.DataFrame:
             }
         )
 
-    return pd.DataFrame(event_list_for_plot)
+    df = pd.DataFrame(event_list_for_plot)
+    df.sort_values(by=["vehicle_type_name", "time_start"], inplace=True)
+
+    return df
 
 
 def power_and_occupancy(
@@ -299,14 +313,22 @@ def specific_energy_consumption(scenario_id: int, session: Session) -> pd.DataFr
     return pd.DataFrame(result)
 
 
-def vehicle_soc(vehicle_id: int, session: Session) -> pd.DataFrame:
+def vehicle_soc(
+    vehicle_id: int, session: Session
+) -> Tuple[pd.DataFrame, Dict[str, List[Tuple[str, datetime, datetime]]]]:
     """
-    This function takes in a vehicle id and returns a dataframe with the SoC of the vehicle at different times. This
-    dataframe has the following columns:
+    This function takes in a vehicle id and returns a description what happened to the vehicle over time.
+    The dataframe contains the following columns:
     - time: the time at which the SoC was recorded
     - soc: the state of charge at the given time
-    - event_type: the type of event at the given time. See :class:`eflips.model.EventType` for more information
-    - location: the location of the event at the given time. This could be "depot", "trip" or "station"
+
+    Additionally, a dictionary for the different kinds of events is returned. For each kind of event, a list of Tuples
+    with a description of the event, the start time and the end time is returned.
+
+    The kinds of events are:
+    - "rotation": A list of rotation names and the time the rotation started and ended
+    - "charging": A list of the location of the charging and the time the charging started and ended
+
     :param vehicle_id: the unique identifier of the vehicle
     :param session: A :class:`sqlalchemy.orm.session.Session` object to an eflips-model database
     :return: A pandas DataFrame
@@ -317,32 +339,46 @@ def vehicle_soc(vehicle_id: int, session: Session) -> pd.DataFrame:
         .order_by(Event.time_start)
         .all()
     )
+
+    descriptions: Dict[str, List[Tuple[str, datetime, datetime]]] = {
+        "rotation": [],
+        "charging": [],
+    }
+
     # Go through all events and connect the soc_start and soc_end and time_start and time_end
     all_times = []
     all_soc = []
-    all_events = []
-    all_locations = []
     for event in events_from_db:
         all_times.append(event.time_start)
         all_times.append(event.time_end)
+
+        if event.timeseries is not None:
+            this_event_times: List[datetime] = [
+                datetime.fromisoformat(t) for t in event.timeseries["time"]  # type: ignore
+            ]
+            this_event_socs: List[float] = event.timeseries["soc"]  # type: ignore
+            all_times.extend(this_event_times)
+            all_soc.extend(this_event_socs)
+
         all_soc.append(event.soc_start)
         all_soc.append(event.soc_end)
 
-        # Assign the event type to both start and end time
-        all_events.append(event.event_type.name.replace("_", " ").title())
-        all_events.append(event.event_type.name.replace("_", " ").title())
+        if (
+            event.event_type == EventType.CHARGING_DEPOT
+            or event.event_type == EventType.CHARGING_OPPORTUNITY
+        ):
+            name = event.area.name if event.area else event.station.name
+            descriptions["charging"].append((name, event.time_start, event.time_end))
 
-        # Assign a location to each event
-        location = None
-        if event.area_id is not None:
-            location = "Depot"
-        elif event.trip_id is not None:
-            location = "Trip"
-        elif event.station_id is not None:
-            location = "Station"
+    for rotation in (
+        session.query(Rotation).filter(Rotation.vehicle_id == vehicle_id).all()
+    ):
+        descriptions["rotation"].append(
+            (
+                rotation.name,
+                rotation.trips[0].departure_time,
+                rotation.trips[-1].arrival_time,
+            )
+        )
 
-        # Assign the event location to both start and end time
-        all_locations.append(location)
-        all_locations.append(location)
-
-    return pd.DataFrame({"time": all_times, "soc": all_soc, "event_type": all_events, "location": all_locations})
+    return (pd.DataFrame({"time": all_times, "soc": all_soc}), descriptions)
