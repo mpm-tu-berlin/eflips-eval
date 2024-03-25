@@ -27,6 +27,7 @@ sphinx-autoapi = "^3.0.0"
 sphinx-paramlinks = "^0.6.0"
 pandas-stubs = "^2.2.0.240218"
 coverage = "^7.4.4"
+eflips-depot = "^3.0.1"
 
 [tool.mypy]
 plugins = "numpy.typing.mypy_plugin"
