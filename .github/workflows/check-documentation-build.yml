@@ -1,10 +1,10 @@
 name: Check Documentation on Pull Request
+on: pull_request
 
-on: [pull_request]
 
 env:
-  PYTHON_VERSION: "3.11"
-  POETRY_VERSION: "1.4.2"
+  PYTHON_VERSION: "3.12"
+  POETRY_VERSION: "1.7.1"
   POETRY_URL: https://install.python-poetry.org
 
 
@@ -16,17 +16,15 @@ jobs:
     steps:
       # We do not need SSH Keys, .. , as we only need the dev dependencies for building sphinx doc, nothing else
       - name: Check out code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install poetry
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-          poetry config experimental.system-git-client true
       - name: Install Dependencies (dev only)
         run: |
           poetry install --no-root --only dev
@@ -36,5 +34,5 @@ jobs:
       # Otherwise, GH Action will fail.
       - name: Compile Sphinx Documentation (Check for errors)
         run: |
-          cd docs/
+          cd doc/
           poetry run sphinx-build -b html . _build -W -a
