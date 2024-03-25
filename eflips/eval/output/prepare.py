@@ -367,7 +367,11 @@ def vehicle_soc(
             event.event_type == EventType.CHARGING_DEPOT
             or event.event_type == EventType.CHARGING_OPPORTUNITY
         ):
-            name = event.area.name if event.area else event.station.name
+            if event.area is not None:
+                name = event.area.name + " in " + event.area.depot.name
+            else:
+                name = event.station.name
+
             descriptions["charging"].append((name, event.time_start, event.time_end))
 
     for rotation in (
