@@ -148,12 +148,24 @@ def depot_event(
     )
     if color_scheme == "soc":
         legend_title = "State of Charge"
+        fig.update_layout(coloraxis=dict(colorbar=dict(orientation='h', y=-0.15)))
     else:
         legend_title = color_scheme.replace("_", " ").title()
 
+    vehicle_types = prepared_data["vehicle_type_name"].unique()
+
+    for bar in fig.data:
+        for vehicle_type in vehicle_types:
+            if vehicle_type in bar.name:
+                # Substituting legendgroup with vehicle type
+                bar.legendgroup = str(vehicle_type)
+                bar.legendgrouptitle = {"text": vehicle_type}
+                break
+
     fig.update_xaxes(title_text="Time")
     fig.update_yaxes(title_text="Vehicles", secondary_y=False)
-    fig.update_layout(legend={"title": legend_title}, yaxis={"showticklabels": False})
+    fig.update_layout(legend={"title": legend_title + " , " + "Vehicle Type"}, yaxis={"showticklabels": False})
+    fig.update_layout(legend=dict(groupclick="togglegroup"))
 
     return fig
 
