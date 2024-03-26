@@ -1,16 +1,16 @@
-name: CI
+name: Check Version Number
 on:
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Check pypi versions
-        uses: maybe-hello-world/pyproject-check-version@v4
+        uses: mpm-tu-berlin/pyproject-check-version-poetry@v3
         id: versioncheck
         with:
           pyproject-path: "./pyproject.toml"    # default value
