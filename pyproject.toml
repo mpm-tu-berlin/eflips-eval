@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eflips-eval"
-version = "0.1.2"
+version = "1.0.0"
 description = ""
 authors = [
     "Ludger Heide <ludger.heide@lhtechnologies.de>",
