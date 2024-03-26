@@ -1,0 +1,23 @@
+name: CI
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check pypi versions
+        uses: maybe-hello-world/pyproject-check-version@v4
+        id: versioncheck
+        with:
+          pyproject-path: "./pyproject.toml"    # default value
+          test-regex: "[0-9]+.[0-9]+.[0-9]+"
+
+      - name: check output
+        run: |
+            echo "Output: ${{ steps.versioncheck.outputs.local_version_is_higher }}"  # 'true' or 'false
+            echo "Local version: ${{ steps.versioncheck.outputs.local_version }}"     # e.g., 0.1.1
+            echo "Public version: ${{ steps.versioncheck.outputs.public_version }}"   # e.g., 0.1.0
