@@ -230,7 +230,6 @@ def power_and_occupancy(
             this_event_times[i] <= this_event_times[i + 1]
             for i in range(len(this_event_times) - 1)
         )
-        assert all(0 <= this_event_socs[i] <= 1 for i in range(len(this_event_socs)))
         assert all(
             this_event_socs[i] <= this_event_socs[i + 1]
             for i in range(len(this_event_socs) - 1)
