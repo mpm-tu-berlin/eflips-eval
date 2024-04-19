@@ -31,7 +31,7 @@ def get_color_scheme(
                 "Driving": "skyblue",
                 "Service": "salmon",
                 "Standby Departure": "orange",
-                "Standby": "lightcoral",
+                "Standby": "yellow",
                 "Precondition": "lightgrey",
             }
             color_continuous_scale = ""
