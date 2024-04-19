@@ -31,7 +31,7 @@ def get_color_scheme(
                 "Driving": "skyblue",
                 "Service": "salmon",
                 "Standby Departure": "orange",
-                "Standby": "lightcoral",
+                "Standby": "yellow",
                 "Precondition": "lightgrey",
             }
             color_continuous_scale = ""
@@ -95,7 +95,9 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
             "event_type": "Event Type",
         },
     )
-    fig.update(layout_yaxis_range=[0, 100])
+
+    lower_range = min(prepared_data["soc"])
+    fig.update(layout_yaxis_range=[min(lower_range - 1, 0), 100])
     return fig
 
 
