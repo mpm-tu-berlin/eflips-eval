@@ -1,4 +1,4 @@
-[![Unit Tests](https://github.com/mpm-tu-berlin/eflips-model/actions/workflows/unittests.yml/badge.svg)](https://github.com/mpm-tu-berlin/eflips-model/actions/workflows/unittests.yml) 
+[![Unit Tests](https://github.com/mpm-tu-berlin/eflips-eval/actions/workflows/unittests.yml/badge.svg)](https://github.com/mpm-tu-berlin/eflips-eval/actions/workflows/unittests.yml) 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # eflips-eval
