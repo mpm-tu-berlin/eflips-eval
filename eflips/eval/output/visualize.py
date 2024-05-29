@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import pandas as pd
 import plotly.express as px  # type: ignore
@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots  # type: ignore
 
 def get_color_scheme(
     color_scheme: str,
-) -> Dict[str, str | Dict[str, str] | str | px.colors.sequential]:
+) -> Dict[str, str | dict[str, str] | None]:
     """
     This function returns a dictionary with the color scheme to be used in the gantt chart
     :param color_scheme: A string representing the color scheme to be used in the gantt chart. It can be one of the following:
@@ -237,7 +237,6 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
     )
     # Reduce opacity to see both histograms
     fig.update_traces(opacity=0.75)
-    fig.show()
     return fig
 
 
