@@ -222,7 +222,7 @@ def power_and_occupancy(
         this_event_times.insert(0, event.time_start)
         this_event_socs.insert(0, event.soc_start)
         # Attach the event's time_end and soc to the timeseries at the end
-        this_event_times.append(event.time_end)
+        this_event_times.append(event.time_end - timedelta(seconds=1))
         this_event_socs.append(event.soc_end)
         this_event_unix_times = np.array([t.timestamp() for t in this_event_times])
 
@@ -251,7 +251,7 @@ def power_and_occupancy(
         # with left=0 and right=0
         this_event_occupancy = np.interp(
             time_as_unix,
-            [event.time_start.timestamp(), event.time_end.timestamp()],
+            [event.time_start.timestamp(), event.time_end.timestamp() - 1],
             [1, 1],
             left=0,
             right=0,
