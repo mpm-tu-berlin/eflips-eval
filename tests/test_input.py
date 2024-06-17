@@ -2,6 +2,7 @@
 This file contains tests for the "input" visualizations, which are visualizations that can be done before the simulation
 has been run.
 """
+
 import dash_cytoscape
 import eflips.depot.api
 import plotly.graph_objs as go  # type: ignore

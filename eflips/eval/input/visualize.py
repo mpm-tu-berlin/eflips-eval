@@ -69,20 +69,32 @@ def single_rotation_info(prepared_data: pd.DataFrame) -> cyto.Cytoscape:
         # Handle the station (node) information
         if row.departure_station_id not in stations_already_added:
             elements.append(
-                {"data": {"id": str(row.departure_station_id), "label": row.departure_station_name}}
+                {
+                    "data": {
+                        "id": str(row.departure_station_id),
+                        "label": row.departure_station_name,
+                    }
+                }
             )
             stations_already_added.add(row.departure_station_id)
         if row.arrival_station_id not in stations_already_added:
             elements.append(
-                {"data": {"id": str(row.arrival_station_id), "label": str(row.arrival_station_name)}}
+                {
+                    "data": {
+                        "id": str(row.arrival_station_id),
+                        "label": str(row.arrival_station_name),
+                    }
+                }
             )
             stations_already_added.add(row.arrival_station_id)
 
         # Handle the trip (edge) information
         type_str = "Passenger" if row.trip_type == TripType.PASSENGER else "Deadhead"
         color = "#9dbaea" if row.trip_type == TripType.PASSENGER else "#f4a261"
-        trip_str = (f"{type_str} trip {row.departure_station_name} ({row.departure_time.strftime('%H:%M')})"
-                    f" -> {row.arrival_station_name} ({row.arrival_time.strftime('%H:%M')})")
+        trip_str = (
+            f"{type_str} trip {row.departure_station_name} ({row.departure_time.strftime('%H:%M')})"
+            f" -> {row.arrival_station_name} ({row.arrival_time.strftime('%H:%M')})"
+        )
         elements.append(
             {
                 "data": {
@@ -95,29 +107,26 @@ def single_rotation_info(prepared_data: pd.DataFrame) -> cyto.Cytoscape:
         )
 
     cytograph = cyto.Cytoscape(
-        id='cytoscape',
+        id="cytoscape",
         elements=elements,
-        layout={'name': 'cose'},
-        style={'width': '1000px', 'height': '1000px'},
+        layout={"name": "cose"},
+        style={"width": "1000px", "height": "1000px"},
         stylesheet=[
             {
-                'selector': 'node',
-                'style': {
-                    'label': 'data(label)',
-                    'background-color': '#11479e'
-                }
+                "selector": "node",
+                "style": {"label": "data(label)", "background-color": "#11479e"},
             },
             {
-                'selector': 'edge',
-                'style': {
-                    'label': 'data(label)',
-                    'curve-style': 'bezier',
-                    'target-arrow-shape': 'triangle',
-                    'line-color': 'data(color)',
-                    'target-arrow-color': 'data(color)',
-                }
-            }
-        ]
+                "selector": "edge",
+                "style": {
+                    "label": "data(label)",
+                    "curve-style": "bezier",
+                    "target-arrow-shape": "triangle",
+                    "line-color": "data(color)",
+                    "target-arrow-color": "data(color)",
+                },
+            },
+        ],
     )
 
     return cytograph

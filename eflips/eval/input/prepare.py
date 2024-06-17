@@ -86,8 +86,8 @@ def rotation_info(
 
 
 def single_rotation_info(
-        rotation_id: int,
-        session: sqlalchemy.orm.session.Session,
+    rotation_id: int,
+    session: sqlalchemy.orm.session.Session,
 ) -> pd.DataFrame:
     """
     This methods provides information over the trips in a single rotation and returns a pandas DataFrame with the
@@ -110,9 +110,12 @@ def single_rotation_info(
     :return: A pandas DataFrame
     """
 
-    rotation = session.query(Rotation).filter(Rotation.id == rotation_id).options(
-        sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route)
-    ).one()
+    rotation = (
+        session.query(Rotation)
+        .filter(Rotation.id == rotation_id)
+        .options(sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route))
+        .one()
+    )
 
     result: List[Dict[str, int | float | str | datetime]] = []
 
