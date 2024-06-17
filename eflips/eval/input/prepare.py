@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import Dict, List
 
-import sqlalchemy
 import pandas as pd
-
-from eflips.model import Rotation
+import sqlalchemy
+from eflips.model import Rotation, Trip
 
 
 def rotation_name_for_sorting(rotation_name: str) -> str:
@@ -84,3 +83,57 @@ def rotation_info(
     df.sort_values(by=["line_name", "time_start"], inplace=True)
 
     return df
+
+
+def single_rotation_info(
+    rotation_id: int,
+    session: sqlalchemy.orm.session.Session,
+) -> pd.DataFrame:
+    """
+    This methods provides information over the trips in a single rotation and returns a pandas DataFrame with the
+    following columns:
+
+    - trip_id: the id of the trip
+    - trip_type: the type of the trip
+    - line_name: the name of the line
+    - route_name: the name of the route
+    - distance: the distance of the route
+    - departure_time: the departure time of the trip
+    - arrival_time: the arrival time of the trip
+    - departure_station_name: the name of the departure station
+    - departure_station_id: the id of the departure station
+    - arrival_station_name: the name of the arrival station
+    - arrival_station_id: the id of the arrival station
+
+    :param rotation_id: The id of the rotation to get the information for
+    :param session: An sqlalchemy session to an eflips-model database
+    :return: A pandas DataFrame
+    """
+
+    rotation = (
+        session.query(Rotation)
+        .filter(Rotation.id == rotation_id)
+        .options(sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route))
+        .one()
+    )
+
+    result: List[Dict[str, int | float | str | datetime]] = []
+
+    for trip in rotation.trips:
+        result.append(
+            {
+                "trip_id": trip.id,
+                "trip_type": trip.trip_type,
+                "line_name": rotation.name,
+                "route_name": trip.route.name,
+                "distance": trip.route.distance,
+                "departure_time": trip.departure_time,
+                "arrival_time": trip.arrival_time,
+                "departure_station_name": trip.route.departure_station.name,
+                "departure_station_id": trip.route.departure_station.id,
+                "arrival_station_name": trip.route.arrival_station.name,
+                "arrival_station_id": trip.route.arrival_station.id,
+            }
+        )
+
+    return pd.DataFrame(result)
