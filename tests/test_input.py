@@ -2,7 +2,7 @@
 This file contains tests for the "input" visualizations, which are visualizations that can be done before the simulation
 has been run.
 """
-
+import dash_cytoscape
 import eflips.depot.api
 import plotly.graph_objs as go  # type: ignore
 from eflips.model import (
@@ -65,3 +65,41 @@ class TestInput(BaseTest):
         assert len(df_1) == 1
         assert len(df_2) == 1
         assert df_1.equals(df_2)
+
+    def test_rotation_info_single_roatation_2(self, scenario, session):
+        rotation_id = (
+            session.query(Rotation)
+            .filter(Rotation.scenario_id == scenario.id)
+            .first()
+            .id
+        )
+        df_1 = eflips.eval.input.prepare.single_rotation_info(rotation_id, session)
+        assert df_1 is not None
+
+        # The following columns should be present
+        # - trip_id: the id of the trip
+        # - trip_type: the type of the trip
+        # - line_name: the name of the line
+        # - route_name: the name of the route
+        # - distance: the distance of the route
+        # - departure_time: the departure time of the trip
+        # - arrival_time: the arrival time of the trip
+        # - departure_station_name: the name of the departure station
+        # - departure_station_id: the id of the departure station
+        # - arrival_station_name: the name of the arrival station
+        # - arrival_station_id: the id of the arrival station
+        assert "trip_id" in df_1.columns
+        assert "trip_type" in df_1.columns
+        assert "line_name" in df_1.columns
+        assert "route_name" in df_1.columns
+        assert "distance" in df_1.columns
+        assert "departure_time" in df_1.columns
+        assert "arrival_time" in df_1.columns
+        assert "departure_station_name" in df_1.columns
+        assert "departure_station_id" in df_1.columns
+        assert "arrival_station_name" in df_1.columns
+        assert "arrival_station_id" in df_1.columns
+
+        my_cyto = eflips.eval.input.visualize.single_rotation_info(df_1)
+        assert my_cyto is not None
+        assert isinstance(my_cyto, dash_cytoscape.Cytoscape)
