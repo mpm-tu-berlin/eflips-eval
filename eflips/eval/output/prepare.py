@@ -262,6 +262,11 @@ def power_and_occupancy(
     power = (np.diff(energy) / np.diff(time_as_unix).astype(float)) * 3600  # kW
 
     # Create the dataframe
+    # First, change the time to the local timezone
+
+    tz = datetime.now().astimezone().tzinfo
+    time = pd.to_datetime(time).tz_localize("UTC").tz_convert(tz)
+
     result = pd.DataFrame(
         {
             "time": time[:-1],
@@ -316,7 +321,7 @@ def specific_energy_consumption(scenario_id: int, session: Session) -> pd.DataFr
 def vehicle_soc(
     vehicle_id: int,
     session: Session,
-    timezone: zoneinfo.ZoneInfo = zoneinfo.ZoneInfo("UTC"),
+    timezone: zoneinfo.ZoneInfo = None,
 ) -> Tuple[pd.DataFrame, Dict[str, List[Tuple[str, datetime, datetime]]]]:
     """
     This function takes in a vehicle id and returns a description what happened to the vehicle over time.
@@ -331,7 +336,8 @@ def vehicle_soc(
     - "rotation": A list of rotation names and the time the rotation started and ended
     - "charging": A list of the location of the charging and the time the charging started and ended
 
-    :param timezone: Explicit timezone information to use for the visualization. Default is UTC
+    :param timezone: Explicit timezone information to use for the visualization. Default is None, which uses the local
+    timezone
     :param vehicle_id: the unique identifier of the vehicle
     :param session: A :class:`sqlalchemy.orm.session.Session` object to an eflips-model database
     :return: A pandas DataFrame
@@ -351,6 +357,11 @@ def vehicle_soc(
     # Go through all events and connect the soc_start and soc_end and time_start and time_end
     all_times = []
     all_soc = []
+
+    # Get local timezone if not specified
+    if timezone is None:
+        time_now = datetime.now().astimezone()
+        timezone = time_now.tzinfo
 
     for event in events_from_db:
         all_times.append(event.time_start.astimezone(timezone))
