@@ -264,9 +264,9 @@ def power_and_occupancy(
     # Create the dataframe
     result = pd.DataFrame(
         {
-            "time": time[1:],
+            "time": time[:-1],
             "power": power,
-            "occupancy": occupancy[1:],
+            "occupancy": occupancy[:-1],
         }
     )
     return result
