@@ -1,6 +1,6 @@
 import zoneinfo
 from datetime import datetime, timedelta
-from typing import Dict, List, Iterable, Tuple
+from typing import Dict, List, Iterable, Tuple, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -247,8 +247,8 @@ def power_and_occupancy(
         )
         energy += this_event_energy
 
-        # For occupancy, we we create an entry at the beginning and end of the event, then resample to 1-second intervals
-        # with left=0 and right=0
+        # For occupancy, we create an entry at the beginning and end of the event, then resample to 1-second
+        # intervals with left=0 and right=0
         this_event_occupancy = np.interp(
             time_as_unix,
             [event.time_start.timestamp(), event.time_end.timestamp() - 1],
@@ -265,11 +265,11 @@ def power_and_occupancy(
     # First, change the time to the local timezone
 
     tz = datetime.now().astimezone().tzinfo
-    time = pd.to_datetime(time).tz_localize("UTC").tz_convert(tz)
+    time_as_local_tz = pd.to_datetime(time).tz_localize("UTC").tz_convert(tz)
 
     result = pd.DataFrame(
         {
-            "time": time[:-1],
+            "time": time_as_local_tz[:-1],
             "power": power,
             "occupancy": occupancy[:-1],
         }
@@ -321,7 +321,7 @@ def specific_energy_consumption(scenario_id: int, session: Session) -> pd.DataFr
 def vehicle_soc(
     vehicle_id: int,
     session: Session,
-    timezone: zoneinfo.ZoneInfo = None,
+    timezone: Optional[zoneinfo.ZoneInfo] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, List[Tuple[str, datetime, datetime]]]]:
     """
     This function takes in a vehicle id and returns a description what happened to the vehicle over time.
@@ -406,4 +406,4 @@ def vehicle_soc(
             )
         )
 
-    return (pd.DataFrame({"time": all_times, "soc": all_soc}), descriptions)
+    return pd.DataFrame({"time": all_times, "soc": all_soc}), descriptions
