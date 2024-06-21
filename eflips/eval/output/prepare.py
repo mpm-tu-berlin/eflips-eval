@@ -321,7 +321,7 @@ def specific_energy_consumption(scenario_id: int, session: Session) -> pd.DataFr
 def vehicle_soc(
     vehicle_id: int,
     session: Session,
-    timezone: Optional[zoneinfo.ZoneInfo] = zoneinfo.ZoneInfo("Europe/Berlin")
+    timezone: Optional[zoneinfo.ZoneInfo] = zoneinfo.ZoneInfo("Europe/Berlin"),
 ) -> Tuple[pd.DataFrame, Dict[str, List[Tuple[str, datetime, datetime]]]]:
     """
     This function takes in a vehicle id and returns a description what happened to the vehicle over time.
@@ -356,7 +356,6 @@ def vehicle_soc(
     # Go through all events and connect the soc_start and soc_end and time_start and time_end
     all_times = []
     all_soc = []
-
 
     for event in events_from_db:
         all_times.append(event.time_start.astimezone(timezone))
