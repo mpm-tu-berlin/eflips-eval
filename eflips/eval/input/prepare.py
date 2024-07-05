@@ -3,24 +3,7 @@ from typing import Dict, List
 
 import pandas as pd
 import sqlalchemy
-from eflips.model import Rotation, Trip
-
-
-def rotation_name_for_sorting(rotation_name: str) -> str:
-    """
-    Takes a rotation name, which in the BVG is a string of two numbers separated by a '/' character, and returns a string
-    that can be used for sorting. The first part of the string is returned for BVG rotations.
-
-    Other rotation names are not supported and will return the rotation name itself.
-
-    :param rotation_name: The rotation name
-    :return: a sortable string
-    """
-
-    if rotation_name is not None and "/" in rotation_name:
-        return rotation_name.split("/")[0]
-    else:
-        return rotation_name
+from eflips.model import Rotation, Trip, Route
 
 
 def rotation_info(
@@ -40,6 +23,9 @@ def rotation_info(
     - time_start: the departure of the first trip
     - time_end: the arrival of the last trip
     - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
+    - line_is_unified: True if the rotation only contains one line
+    - start_station: the name of the departure station
+    - end_station: the name of the arrival station
 
     :param scenario_id: The scenario id for which to create the dataframe
     :param session: An sqlalchemy session to an eflips-model database
@@ -49,7 +35,12 @@ def rotation_info(
 
     result: List[Dict[str, int | float | str | datetime]] = []
 
-    rotations = session.query(Rotation).filter(Rotation.scenario_id == scenario_id)
+    rotations = session.query(Rotation).filter(Rotation.scenario_id == scenario_id).options(
+        sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route).joinedload(Route.line),
+        sqlalchemy.orm.joinedload(Rotation.vehicle_type),
+        sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route).joinedload(Route.departure_station),
+        sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route).joinedload(Route.arrival_station),
+    )
 
     if rotation_ids is not None:
         if isinstance(rotation_ids, int):
@@ -62,6 +53,16 @@ def rotation_info(
         for trip in rotation.trips:
             distance += trip.route.distance / 1000
 
+        # We want to be able to sort and/or group by line. Therefore we need to identify the predominant line name for each
+        # rotation.
+        line_names: Dict[str, int] = {}
+        for trip in rotation.trips:
+            line_name = trip.route.line.name
+            if line_name not in line_names:
+                line_names[line_name] = 0
+            line_names[line_name] += 1
+        line_name = max(line_names, key=line_names.get)
+
         result.append(
             {
                 "rotation_id": rotation.id,
@@ -69,16 +70,16 @@ def rotation_info(
                 "vehicle_type_id": rotation.vehicle_type_id,
                 "vehicle_type_name": rotation.vehicle_type.name,
                 "total_distance": distance,
+                "line_name": line_name,
+                "line_is_unified": len(line_names) == 1,  # True if there is only one line in the rotation
                 "time_start": rotation.trips[0].departure_time,
                 "time_end": rotation.trips[-1].arrival_time,
+                "start_station": rotation.trips[0].route.departure_station.name,
+                "end_station": rotation.trips[-1].route.arrival_station.name,
             }
         )
 
-    # We want to properly sort by rotation name, which is a bit intricate, as it's a string of two numbers divided by a
-    # '/' character. We can't just sort by the string, as "10/11" would come after "10/1". We need to split the string
-    # into its components and sort by them.
     df = pd.DataFrame(result)
-    df["line_name"] = df["rotation_name"].apply(rotation_name_for_sorting)
 
     df.sort_values(by=["line_name", "time_start"], inplace=True)
 
