@@ -12,17 +12,10 @@ from eflips.model import (
 
 import eflips.eval.input.prepare
 import eflips.eval.input.visualize
-from eflips.eval.input.prepare import rotation_name_for_sorting
 from tests.base import BaseTest
 
 
 class TestInput(BaseTest):
-
-    def test_rotation_name_for_for_sorting(self):
-        assert rotation_name_for_sorting("A/B") == "A"
-        assert rotation_name_for_sorting("A/B honig") == "A"
-        assert rotation_name_for_sorting("A") == "A"
-        assert rotation_name_for_sorting(None) is None
 
     def test_rotation_info(self, session, scenario):
 

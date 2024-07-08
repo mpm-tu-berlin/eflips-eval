@@ -19,6 +19,9 @@ def rotation_info(prepared_data: pd.DataFrame) -> go.Figure:
     - time_start: the departure of the first trip
     - time_end: the arrival of the last trip
     - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
+    - line_is_unified: True if the rotation only contains one line
+    - start_station: the name of the departure station
+    - end_station: the name of the arrival station
 
     :return: A plotly figure object
     """
@@ -30,11 +33,22 @@ def rotation_info(prepared_data: pd.DataFrame) -> go.Figure:
         y="rotation_name",
         color="total_distance",
         labels={
+            "time_start": "Departure Time",
+            "time_end": "Arrival Time",
             "rotation_name": "Rotation Name",
             "total_distance": "Total Distance (km)",
             "line_name": "Line Name",
+            "vehicle_type_name": "Vehicle Type Name",
+            "start_station": "Start Station",
+            "end_station": "End Station",
         },
-        hover_data=["vehicle_type_name"],
+        hover_name="rotation_name",
+        hover_data=[
+            "vehicle_type_name",
+            "total_distance",
+            "start_station",
+            "end_station",
+        ],
         pattern_shape="line_name",
     )
     fig.update_layout(legend_orientation="h")
