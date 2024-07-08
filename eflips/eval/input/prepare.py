@@ -82,7 +82,7 @@ def rotation_info(
                 "total_distance": distance,
                 "line_name": line_name,
                 "line_is_unified": len(line_names)
-                                   == 1,  # True if there is only one line in the rotation
+                == 1,  # True if there is only one line in the rotation
                 "time_start": rotation.trips[0].departure_time,
                 "time_end": rotation.trips[-1].arrival_time,
                 "start_station": rotation.trips[0].route.departure_station.name,
