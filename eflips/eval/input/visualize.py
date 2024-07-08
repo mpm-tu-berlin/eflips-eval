@@ -43,8 +43,13 @@ def rotation_info(prepared_data: pd.DataFrame) -> go.Figure:
             "end_station": "End Station",
         },
         hover_name="rotation_name",
-        hover_data=["vehicle_type_name", "total_distance", "start_station", "end_station"],
-        pattern_shape="line_name"
+        hover_data=[
+            "vehicle_type_name",
+            "total_distance",
+            "start_station",
+            "end_station",
+        ],
+        pattern_shape="line_name",
     )
     fig.update_layout(legend_orientation="h")
     return fig

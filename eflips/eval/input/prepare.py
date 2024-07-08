@@ -35,11 +35,21 @@ def rotation_info(
 
     result: List[Dict[str, int | float | str | datetime]] = []
 
-    rotations = session.query(Rotation).filter(Rotation.scenario_id == scenario_id).options(
-        sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route).joinedload(Route.line),
-        sqlalchemy.orm.joinedload(Rotation.vehicle_type),
-        sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route).joinedload(Route.departure_station),
-        sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route).joinedload(Route.arrival_station),
+    rotations = (
+        session.query(Rotation)
+        .filter(Rotation.scenario_id == scenario_id)
+        .options(
+            sqlalchemy.orm.joinedload(Rotation.trips)
+            .joinedload(Trip.route)
+            .joinedload(Route.line),
+            sqlalchemy.orm.joinedload(Rotation.vehicle_type),
+            sqlalchemy.orm.joinedload(Rotation.trips)
+            .joinedload(Trip.route)
+            .joinedload(Route.departure_station),
+            sqlalchemy.orm.joinedload(Rotation.trips)
+            .joinedload(Trip.route)
+            .joinedload(Route.arrival_station),
+        )
     )
 
     if rotation_ids is not None:
@@ -71,7 +81,8 @@ def rotation_info(
                 "vehicle_type_name": rotation.vehicle_type.name,
                 "total_distance": distance,
                 "line_name": line_name,
-                "line_is_unified": len(line_names) == 1,  # True if there is only one line in the rotation
+                "line_is_unified": len(line_names)
+                                   == 1,  # True if there is only one line in the rotation
                 "time_start": rotation.trips[0].departure_time,
                 "time_end": rotation.trips[-1].arrival_time,
                 "start_station": rotation.trips[0].route.departure_station.name,
