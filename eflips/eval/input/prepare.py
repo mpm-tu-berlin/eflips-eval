@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import datetime
 from typing import Dict, List
 
@@ -71,7 +72,7 @@ def rotation_info(
             if line_name not in line_names:
                 line_names[line_name] = 0
             line_names[line_name] += 1
-        line_name = max(line_names, key=line_names.get)
+        line_name = Counter(line_names).most_common(1)[0][0]
 
         result.append(
             {
