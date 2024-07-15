@@ -5,6 +5,8 @@ has been run.
 
 import dash_cytoscape
 import eflips.depot.api
+import folium
+import pandas as pd
 import plotly.graph_objs as go  # type: ignore
 from eflips.model import (
     Rotation,
@@ -59,6 +61,41 @@ class TestInput(BaseTest):
         assert len(df_1) == 1
         assert len(df_2) == 1
         assert df_1.equals(df_2)
+
+    def test_geographic_trip_plot(self, scenario, session):
+        rotation_id = (
+            session.query(Rotation)
+            .filter(Rotation.scenario_id == scenario.id)
+            .first()
+            .id
+        )
+        df_1 = eflips.eval.input.prepare.geographic_trip_plot(rotation_id, session)
+        assert df_1 is not None
+        assert isinstance(df_1, pd.DataFrame)
+
+        # The following columns should be present
+        # - rotation_id: the id of the rotation
+        # - rotation_name: the name of the rotation
+        # - vehicle_type_id: the id of the vehicle type
+        # - vehicle_type_name: the name of the vehicle type
+        # - originating_depot_id: the id of the originating depot
+        # - originating_depot_name: the name of the originating depot
+        # - distance: the distance of the route
+        # - coordinates: An array of *(lon, lat)* tuples with the coordinates of the route - the shape if set, otherwise the stops
+        # - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
+        assert "rotation_id" in df_1.columns
+        assert "rotation_name" in df_1.columns
+        assert "vehicle_type_id" in df_1.columns
+        assert "vehicle_type_name" in df_1.columns
+        assert "originating_depot_id" in df_1.columns
+        assert "originating_depot_name" in df_1.columns
+        assert "distance" in df_1.columns
+        assert "coordinates" in df_1.columns
+        assert "line_name" in df_1.columns
+
+        my_map = eflips.eval.input.visualize.geographic_trip_plot(df_1)
+        assert my_map is not None
+        assert isinstance(my_map, folium.Map)
 
     def test_rotation_info_single_roatation_2(self, scenario, session):
         rotation_id = (
