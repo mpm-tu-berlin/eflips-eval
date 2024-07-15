@@ -1,7 +1,9 @@
 import dash_cytoscape as cyto  # type: ignore
+import folium  # type: ignore
 import pandas as pd
 import plotly.express as px  # type: ignore
 import plotly.graph_objs as go  # type: ignore
+import seaborn as sns  # type: ignore
 from eflips.model import TripType
 
 
@@ -53,6 +55,58 @@ def rotation_info(prepared_data: pd.DataFrame) -> go.Figure:
     )
     fig.update_layout(legend_orientation="h")
     return fig
+
+
+def geographic_trip_plot(prepared_data: pd.DataFrame) -> folium.Map:
+    """
+    This function visualizes the trips on a map using folium. The trips are lines between the departure and arrival
+    stations.
+
+
+
+    :param prepared_data: A Pandas dataframe with the following columns:
+            - rotation_id: the id of the rotation
+            - rotation_name: the name of the rotation
+            - vehicle_type_id: the id of the vehicle type
+            - vehicle_type_name: the name of the vehicle type
+            - originating_depot_id: the id of the originating depot
+            - originating_depot_name: the name of the originating depot
+            - distance: the distance of the route
+            - coordinates: An array of *(lon, lat)* tuples with the coordinates of the route - the shape if set, otherwise the stops
+            - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
+    :return: A folium map object
+    """
+    # Use seaborn to create a color palette for each originating depot
+    palette = sns.color_palette(
+        "husl", n_colors=len(prepared_data["originating_depot_id"].unique())
+    )
+    colors = {}
+    for depot_name in prepared_data["originating_depot_name"].unique():
+        color = palette.pop(0)
+        # Turn the color into a hex string
+        color = "#{:02x}{:02x}{:02x}".format(*[int(c * 255) for c in color])
+        colors[depot_name] = color
+
+    # Obtain the mean latitude and longitude for the map center
+    lat_center = (
+        prepared_data["coordinates"]
+        .apply(lambda x: sum([c[0] for c in x]) / len(x))
+        .mean()
+    )
+    lon_center = (
+        prepared_data["coordinates"]
+        .apply(lambda x: sum([c[1] for c in x]) / len(x))
+        .mean()
+    )
+
+    map = folium.Map(
+        location=[lat_center, lon_center], zoom_start=11, tiles="Cartodb dark_matter"
+    )
+    for i, row in prepared_data.iterrows():
+        color = colors[row["originating_depot_name"]]
+        pl = folium.PolyLine(row["coordinates"], color=color, weight=2.5, opacity=1)
+        map.add_child(pl)
+    return map
 
 
 def single_rotation_info(prepared_data: pd.DataFrame) -> cyto.Cytoscape:

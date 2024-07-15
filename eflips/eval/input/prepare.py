@@ -5,6 +5,7 @@ from typing import Dict, List
 import pandas as pd
 import sqlalchemy
 from eflips.model import Rotation, Trip, Route
+from shapely import wkb  # type: ignore
 
 
 def rotation_info(
@@ -96,6 +97,98 @@ def rotation_info(
     df.sort_values(by=["line_name", "time_start"], inplace=True)
 
     return df
+
+
+def geographic_trip_plot(
+    scenario_id: int,
+    session: sqlalchemy.orm.session.Session,
+    rotation_ids: None | int | List[int] = None,
+) -> pd.DataFrame:
+    """
+    This function creates a dataframe that can be used to visualize the geographic distribution of rotations. It creates
+    a dataframe with one row for each trip and the following columns:
+
+    - rotation_id: the id of the rotation
+    - rotation_name: the name of the rotation
+    - vehicle_type_id: the id of the vehicle type
+    - vehicle_type_name: the name of the vehicle type
+    - originating_depot_id: the id of the originating depot
+    - originating_depot_name: the name of the originating depot
+    - distance: the distance of the route
+    - coordinates: An array of *(lon, lat)* tuples with the coordinates of the route - the shape if set, otherwise the stops
+    - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
+
+    :param scenario_id:
+    :param session:
+    :param rotation_ids:
+    :return: a pandas DataFrame
+    """
+    rotations_q = session.query(Rotation).filter(Rotation.scenario_id == scenario_id)
+    if rotation_ids is not None:
+        if isinstance(rotation_ids, int):
+            rotation_ids = [rotation_ids]
+        rotations_q = rotations_q.filter(Rotation.id.in_(rotation_ids))
+    rotations_q = rotations_q.options(
+        sqlalchemy.orm.joinedload(Rotation.trips)
+        .joinedload(Trip.route)
+        .joinedload(Route.line)
+    )
+    rotations_q = rotations_q.options(
+        sqlalchemy.orm.joinedload(Rotation.vehicle_type),
+    )
+    rotations_q = rotations_q.options(
+        sqlalchemy.orm.joinedload(Rotation.trips)
+        .joinedload(Trip.route)
+        .joinedload(Route.departure_station),
+    )
+
+    result: List[Dict[str, int | float | str | datetime]] = []
+    for rotation in rotations_q:
+        origin_depot_id = rotation.trips[0].route.departure_station_id
+        origin_depot_name = rotation.trips[0].route.departure_station.name
+        line_name = rotation.trips[0].route.line.name
+        vehicle_type_id = rotation.vehicle_type_id
+        vehicle_type_name = rotation.vehicle_type.name
+
+        for trip in rotation.trips:
+            # Obtain the coordinates of the route
+            if trip.route.geom is not None:
+                raise NotImplementedError(
+                    "Geometries are not yet supported. Check if the code below 'just works'."
+                    "If not, you need to implement the conversion to coordinates."
+                )
+                line_geom = wkb.loads(bytes(trip.route.geom.data))
+                line_coords = [(point.y, point.x) for point in line_geom.coords]
+            else:
+                line_coords = []
+                point_geom = wkb.loads(bytes(trip.route.departure_station.geom.data))
+                lon, lat = point_geom.x, point_geom.y
+                line_coords.append((lat, lon))
+                for assoc in trip.route.assoc_route_stations:
+                    if assoc.location is not None:
+                        station_coordinates = wkb.loads(bytes(assoc.location.data))
+                    else:
+                        station_coordinates = wkb.loads(bytes(assoc.station.geom.data))
+                    lon, lat = station_coordinates.x, station_coordinates.y
+                    line_coords.append((lat, lon))
+                point_geom = wkb.loads(bytes(trip.route.arrival_station.geom.data))
+                lon, lat = point_geom.x, point_geom.y
+                line_coords.append((lat, lon))
+
+            result.append(
+                {
+                    "rotation_id": rotation.id,
+                    "rotation_name": rotation.name,
+                    "vehicle_type_id": vehicle_type_id,
+                    "vehicle_type_name": vehicle_type_name,
+                    "originating_depot_id": origin_depot_id,
+                    "originating_depot_name": origin_depot_name,
+                    "distance": trip.route.distance,
+                    "coordinates": line_coords,
+                    "line_name": line_name,
+                }
+            )
+    return pd.DataFrame(result)
 
 
 def single_rotation_info(
