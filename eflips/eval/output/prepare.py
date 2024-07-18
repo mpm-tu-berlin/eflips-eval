@@ -216,7 +216,6 @@ def power_and_occupancy(
             this_event_times: List[datetime] = [datetime.fromisoformat(t) for t in event.timeseries["time"]]  # type: ignore
             # Do not directly assign the list because lists are passed by reference
             this_event_socs: List[float] = [soc for soc in event.timeseries["soc"]]  # type: ignore
-            # this_event_socs: List[float] = event.timeseries["soc"]  # type: ignore
         else:
             this_event_times = []
             this_event_socs = []
