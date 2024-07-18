@@ -255,7 +255,10 @@ def power_and_occupancy(
         # intervals with left=0 and right=0
         this_event_occupancy = np.interp(
             time_as_unix,
-            [event.time_start.timestamp(), event.time_end.timestamp() - temporal_resolution],
+            [
+                event.time_start.timestamp(),
+                event.time_end.timestamp() - temporal_resolution,
+            ],
             [1, 1],
             left=0,
             right=0,

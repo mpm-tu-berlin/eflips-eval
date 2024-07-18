@@ -553,13 +553,11 @@ class BaseTest:
 
         # Connect the areas and processes. *The final area needs to have both a charging and standby_departure process*
 
-
         cleaning_area.processes.append(clean)
         charging_area.processes.append(charging)
         charging_area.processes.append(standby_departure)
 
         assocs = [
-
             AssocPlanProcess(scenario=scenario, process=clean, plan=plan, ordinal=0),
             AssocPlanProcess(scenario=scenario, process=charging, plan=plan, ordinal=1),
             AssocPlanProcess(
