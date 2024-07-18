@@ -214,7 +214,9 @@ def power_and_occupancy(
     for event in events:
         if event.timeseries is not None:
             this_event_times: List[datetime] = [datetime.fromisoformat(t) for t in event.timeseries["time"]]  # type: ignore
-            this_event_socs: List[float] = event.timeseries["soc"]  # type: ignore
+            # Do not directly assign the list because lists are passed by reference
+            this_event_socs: List[float] = [soc for soc in event.timeseries["soc"]]  # type: ignore
+            # this_event_socs: List[float] = event.timeseries["soc"]  # type: ignore
         else:
             this_event_times = []
             this_event_socs = []
@@ -222,15 +224,17 @@ def power_and_occupancy(
         this_event_times.insert(0, event.time_start)
         this_event_socs.insert(0, event.soc_start)
         # Attach the event's time_end and soc to the timeseries at the end
-        this_event_times.append(event.time_end - timedelta(seconds=1))
+        this_event_times.append(event.time_end)
         this_event_socs.append(event.soc_end)
         this_event_unix_times = np.array([t.timestamp() for t in this_event_times])
 
         # Validation: the timeseries should be sorted and the socs should be in the range [0, 1] and monotonically increasing
+
         assert all(
             this_event_times[i] <= this_event_times[i + 1]
             for i in range(len(this_event_times) - 1)
         )
+
         assert all(
             this_event_socs[i] <= this_event_socs[i + 1]
             for i in range(len(this_event_socs) - 1)
@@ -251,7 +255,7 @@ def power_and_occupancy(
         # intervals with left=0 and right=0
         this_event_occupancy = np.interp(
             time_as_unix,
-            [event.time_start.timestamp(), event.time_end.timestamp() - 1],
+            [event.time_start.timestamp(), event.time_end.timestamp() - temporal_resolution],
             [1, 1],
             left=0,
             right=0,
