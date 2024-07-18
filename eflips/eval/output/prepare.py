@@ -6,7 +6,16 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import sqlalchemy
-from eflips.model import Event, Rotation, Vehicle, Trip, EventType
+from eflips.model import (
+    Event,
+    Rotation,
+    Vehicle,
+    Trip,
+    EventType,
+    Area,
+    AreaType,
+    Process,
+)
 from sqlalchemy.orm import Session
 
 
@@ -119,6 +128,26 @@ def depot_event(
 
     events_from_db = events_from_db_q.all()
 
+    direct_charging_areas = (
+        session.query(Area)
+        .filter(
+            Area.processes.any(Process.electric_power.isnot(None)),
+            Area.area_type == AreaType.DIRECT_ONESIDE,
+        )
+        .all()
+    )
+    direct_charging_area_ids = [area.id for area in direct_charging_areas]
+
+    line_charging_areas = (
+        session.query(Area)
+        .filter(
+            Area.processes.any(Process.electric_power.isnot(None)),
+            Area.area_type == AreaType.LINE,
+        )
+        .all()
+    )
+    line_charging_area_ids = [area.id for area in line_charging_areas]
+
     for event in events_from_db:
         location = None
         if event.area_id is not None:
@@ -127,6 +156,14 @@ def depot_event(
             location = "Trip"
         elif event.station_id is not None:
             location = "Station"
+
+        area_type = None
+        if event.area_id in direct_charging_area_ids:
+            area_type = "Direct"
+        elif event.area_id in line_charging_area_ids:
+            area_type = "Line"
+        else:
+            area_type = "Other"
 
         event_list_for_plot.append(
             {
@@ -142,6 +179,7 @@ def depot_event(
                 "trip_id": event.trip_id,
                 "station_id": event.station_id,
                 "location": location,
+                "area_type": area_type,
             }
         )
 

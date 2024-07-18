@@ -47,6 +47,14 @@ def get_color_scheme(
                 "Station": "steelblue",
             }
             color_continuous_scale = ""
+        case "area_type":
+            color = "area_type"
+            color_discrete_map = {
+                "Direct": "salmon",
+                "Line": "forestgreen",
+                "Other": "lightgrey",
+            }
+            color_continuous_scale = ""
         case _:
             raise ValueError("Invalid color scheme")
 

@@ -48,9 +48,7 @@ if __name__ == "__main__":
 
     # Example of using the depot event visualization
     prepared_data = output_prepare.depot_event(SCENARIO_ID, session)
-    fig = output_visualize.depot_event(
-        prepared_data,
-    )
+    fig = output_visualize.depot_event(prepared_data, color_scheme="area_type")
     fig.show()
     #
     # Example of using the vehicle soc visualization
