@@ -8,6 +8,7 @@ import pandas as pd
 import sqlalchemy
 from eflips.model import Event, Rotation, Vehicle, Trip, EventType
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import or_
 
 
 def departure_arrival_soc(
@@ -155,6 +156,7 @@ def power_and_occupancy(
     aread_id: int | Iterable[int],
     session: sqlalchemy.orm.session.Session,
     temporal_resolution: int = 60,
+        station_id: Optional[int | Iterable[int]] = None,
 ) -> pd.DataFrame:
     """
     This function creates a dataframe containing a timeseries of the power and occupancy of the given area(s).
@@ -166,15 +168,28 @@ def power_and_occupancy(
     :param aread_id: The id of the area for which to create the dataframe
     :param session: An sqlalchemy session to an eflips-model database
     :param temporal_resolution: The temporal resolution of the timeseries in seconds. Default is 60 seconds.
+    :param station_id: The id of the station for which to create the dataframe. If None, no station is used.
+                       In order to only display the station, set aread_id to None or an empty list and provide the
+                         station id(s). Default is None.
     :return: A pandas DataFrame
     """
+
     if isinstance(aread_id, int):
         aread_id = [aread_id]
-    events = session.query(Event).filter(Event.area_id.in_(aread_id))
+    elif aread_id is None:
+        aread_id = []
+    if isinstance(station_id, int):
+        station_id = [station_id]
+    elif station_id is None:
+        station_id = []
+
+    events = session.query(Event).filter(
+        or_(Event.area_id.in_(aread_id), Event.station_id.in_(station_id))
+    )
 
     start_time_row = (
         session.query(Event.time_start)
-        .filter(Event.area_id.in_(aread_id))
+        .filter(or_(Event.area_id.in_(aread_id), Event.station_id.in_(station_id)))
         .order_by(Event.time_start)
         .first()
     )
@@ -183,7 +198,7 @@ def power_and_occupancy(
     start_time = start_time_row[0]  # Oh, if we had nullability operators in Python…
     end_time_row = (
         session.query(Event.time_end)
-        .filter(Event.area_id.in_(aread_id))
+        .filter(or_(Event.area_id.in_(aread_id), Event.station_id.in_(station_id)))
         .order_by(Event.time_end.desc())
         .first()
     )
