@@ -218,13 +218,22 @@ def power_and_occupancy(
         else:
             this_event_times = []
             this_event_socs = []
-        # Attach the event's time_start and soc to the timeseries at the beginning
-        this_event_times.insert(0, event.time_start)
-        this_event_socs.insert(0, event.soc_start)
-        # Attach the event's time_end and soc to the timeseries at the end
-        this_event_times.append(event.time_end - timedelta(seconds=1))
-        this_event_socs.append(event.soc_end)
+
+        # Attach the event's time_start and soc to the timeseries at the beginning, if necessary
+        if event.timeseries is None or this_event_times[0] != event.time_start:
+            assert this_event_times[0] > event.time_start
+            this_event_times.insert(0, event.time_start)
+            this_event_socs.insert(0, event.soc_start)
+        # Attach the event's time_end and soc to the timeseries at the end, if necessary
+        if event.timeseries is None or this_event_times[-1] != event.time_end:
+            assert this_event_times[-1] < event.time_end
+            this_event_times.append(event.time_end)
+            this_event_socs.append(event.soc_end)
         this_event_unix_times = np.array([t.timestamp() for t in this_event_times])
+
+        # We need to subtract a very small amount from the last time, to avoid an event ending and starting at the same time
+        # Leading to an occupancy of 2 at that time
+        this_event_unix_times[-1] -= 1  # 1 second
 
         # Validation: the timeseries should be sorted and the socs should be in the range [0, 1] and monotonically increasing
         assert all(
