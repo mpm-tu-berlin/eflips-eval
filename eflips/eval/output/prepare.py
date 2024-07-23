@@ -17,6 +17,7 @@ from eflips.model import (
     Process,
 )
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import or_
 
 
 def departure_arrival_soc(
@@ -193,6 +194,7 @@ def power_and_occupancy(
     aread_id: int | Iterable[int],
     session: sqlalchemy.orm.session.Session,
     temporal_resolution: int = 60,
+    station_id: Optional[int | Iterable[int]] = None,
 ) -> pd.DataFrame:
     """
     This function creates a dataframe containing a timeseries of the power and occupancy of the given area(s).
@@ -204,15 +206,28 @@ def power_and_occupancy(
     :param aread_id: The id of the area for which to create the dataframe
     :param session: An sqlalchemy session to an eflips-model database
     :param temporal_resolution: The temporal resolution of the timeseries in seconds. Default is 60 seconds.
+    :param station_id: The id of the station for which to create the dataframe. If None, no station is used.
+                       In order to only display the station, set aread_id to None or an empty list and provide the
+                         station id(s). Default is None.
     :return: A pandas DataFrame
     """
+
     if isinstance(aread_id, int):
         aread_id = [aread_id]
-    events = session.query(Event).filter(Event.area_id.in_(aread_id))
+    elif aread_id is None:
+        aread_id = []
+    if isinstance(station_id, int):
+        station_id = [station_id]
+    elif station_id is None:
+        station_id = []
+
+    events = session.query(Event).filter(
+        or_(Event.area_id.in_(aread_id), Event.station_id.in_(station_id))
+    )
 
     start_time_row = (
         session.query(Event.time_start)
-        .filter(Event.area_id.in_(aread_id))
+        .filter(or_(Event.area_id.in_(aread_id), Event.station_id.in_(station_id)))
         .order_by(Event.time_start)
         .first()
     )
@@ -221,7 +236,7 @@ def power_and_occupancy(
     start_time = start_time_row[0]  # Oh, if we had nullability operators in Python…
     end_time_row = (
         session.query(Event.time_end)
-        .filter(Event.area_id.in_(aread_id))
+        .filter(or_(Event.area_id.in_(aread_id), Event.station_id.in_(station_id)))
         .order_by(Event.time_end.desc())
         .first()
     )
@@ -257,13 +272,24 @@ def power_and_occupancy(
         else:
             this_event_times = []
             this_event_socs = []
-        # Attach the event's time_start and soc to the timeseries at the beginning
-        this_event_times.insert(0, event.time_start)
-        this_event_socs.insert(0, event.soc_start)
-        # Attach the event's time_end and soc to the timeseries at the end
-        this_event_times.append(event.time_end)
-        this_event_socs.append(event.soc_end)
+
+        # Attach the event's time_start and soc to the timeseries at the beginning, if necessary
+        if event.timeseries is None or this_event_times[0] != event.time_start:
+            if event.timeseries is not None:
+                assert this_event_times[0] > event.time_start
+            this_event_times.insert(0, event.time_start)
+            this_event_socs.insert(0, event.soc_start)
+        # Attach the event's time_end and soc to the timeseries at the end, if necessary
+        if event.timeseries is None or this_event_times[-1] != event.time_end:
+            if event.timeseries is not None:
+                assert this_event_times[-1] < event.time_end
+            this_event_times.append(event.time_end)
+            this_event_socs.append(event.soc_end)
         this_event_unix_times = np.array([t.timestamp() for t in this_event_times])
+
+        # We need to subtract a very small amount from the last time, to avoid an event ending and starting at the same time
+        # Leading to an occupancy of 2 at that time
+        this_event_unix_times[-1] -= 1  # 1 second
 
         # Validation: the timeseries should be sorted and the socs should be in the range [0, 1] and monotonically increasing
 
