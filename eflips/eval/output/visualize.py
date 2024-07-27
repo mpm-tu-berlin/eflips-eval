@@ -1,14 +1,20 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
 import pandas as pd
 import plotly.express as px  # type: ignore
 import plotly.graph_objs as go  # type: ignore
+from eflips.model import AreaType, VehicleType
 from plotly.subplots import make_subplots  # type: ignore
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.transforms as transforms
+import matplotlib.animation as animation
 
 
 def get_color_scheme(
-    color_scheme: str,
+        color_scheme: str,
 ) -> Dict[str, str | dict[str, str] | None]:
     """
     This function returns a dictionary with the color scheme to be used in the gantt chart
@@ -110,7 +116,7 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
 
 
 def depot_event(
-    prepared_data: pd.DataFrame, color_scheme: str = "event_type"
+        prepared_data: pd.DataFrame, color_scheme: str = "event_type"
 ) -> go.Figure:
     """
     This function visualizes all events as a gantt chart using plotly
@@ -228,7 +234,7 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
     :return: a plotly figure object
     """
     prepared_data["specific_energy_consumption"] = (
-        prepared_data["energy_consumption"] / prepared_data["distance"]
+            prepared_data["energy_consumption"] / prepared_data["distance"]
     )
     bin_count = prepared_data.shape[0] // 10
     fig = go.Figure()
@@ -249,8 +255,8 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
 
 
 def vehicle_soc(
-    prepared_data: pd.DataFrame,
-    descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
+        prepared_data: pd.DataFrame,
+        descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
 ) -> go.Figure:
     """
     This function visualizes the state of charge of a vehicle over time using plotly. Optionally, it can also visualize
@@ -291,3 +297,171 @@ def vehicle_soc(
                 annotation_textangle=270,
             )
     return fig
+
+
+def _draw_slot(ax, vehicle_type, center, angle, color, buffer=0.9, text=None):
+    """
+
+    :param ax:
+    :param vehicle_type:
+    :param center:
+    :param angle:
+    :param color:
+    :param buffer:
+    :param text:
+    :return:
+    """
+    if vehicle_type.length is None or vehicle_type.width is None:
+        # Use default 12m bus size
+        size = (2.55 + buffer, 12)
+    else:
+        size = (vehicle_type.width + buffer, vehicle_type.length)
+    rect = patches.Rectangle(center, size[0], size[1], linewidth=1, facecolor=color)
+
+    # Create an Affine2D transform object and apply the rotation and translation
+    # Rotate around its own center
+    t = transforms.Affine2D().rotate_deg_around(center[0], center[1], angle)
+
+    # Set the transform for the rectangle
+    # rect.set_transform(t)
+    rect.set_transform(t + ax.transData)
+
+    # Add the patch to the Axes
+    ax.add_patch(rect)
+    rect_center = (center[0] + size[0] / 2, center[1] + size[1] / 2)
+
+    ax.text(
+        rect_center[0],
+        rect_center[1],
+        text,
+        ha="center",
+        va="center",
+        transform=t + ax.transData,
+        fontsize=3,
+    )
+
+    return rect
+
+
+def _draw_area(ax, area, center, buffer=0.9):
+    """
+
+    :param ax:
+    :param area:
+    :param center:
+    :param angle:
+    :param buffer:
+    :return:
+    """
+    slots_in_area = []
+
+    if area.vehicle_type is None:
+        vehicle_type = VehicleType(length=12, width=2.55)
+
+    else:
+        vehicle_type = area.vehicle_type
+
+    vehicle_length = vehicle_type.length if vehicle_type.length is not None else 12
+
+    for i in range(area.capacity):
+        slot_center = (center[0], center[1] + (vehicle_length + buffer) * i)
+        slot = _draw_slot(
+            ax,
+            vehicle_type,
+            slot_center,
+            0 if area.area_type == AreaType.LINE else 45,
+            "lightgrey",
+            text=str(i),
+        )
+        slots_in_area.append(slot)
+
+    return slots_in_area
+
+
+def depot_layout(area_blocks):
+    """
+
+    :param area_blocks:
+    :return:
+    """
+    plt.rcParams['figure.dpi'] = 600
+    fig, ax = plt.subplots()
+
+    buffer = 0.9
+    block_distance = 10
+
+    area_dict = {}
+
+    for j in range(len(area_blocks)):
+        areas = area_blocks[j]
+        for i in range(len(areas)):
+            area = areas[i]
+            vehicle_width = 2.55
+            vehicle_length = 12
+            if area.area_type == AreaType.LINE:
+                center = (
+                    i * (vehicle_width * 2 + buffer) + j * block_distance,
+                    0,
+                )
+            elif area.area_type == AreaType.DIRECT_ONESIDE:
+                center = (
+                    i * (vehicle_length + buffer) + j * block_distance,
+                    0,
+                )
+            else:
+                raise NotImplementedError
+
+            slots_in_area = _draw_area(ax, area, center)
+
+            area_dict[area.id] = slots_in_area
+
+    # Set the x and y axis limits
+    plt.axis("equal")
+    plt.show()
+    return area_dict, fig
+
+
+def _is_available(time, available_times):
+    for time_tuple in available_times:
+        if time_tuple[0] <= time <= time_tuple[1]:
+            return True
+    return False
+
+
+def animate(
+        frame, area_dict, area_occupancy, animation_start, time_resolution=120
+):
+    for area_id, slots in area_dict.items():
+        for slot_id, slot in enumerate(slots):
+            slot_occupancy = area_occupancy[(area_id, slot_id)]
+            slot.set_facecolor(
+                "green" if _is_available(frame, slot_occupancy) else "lightgrey"
+            )
+
+    if hasattr(animate, "frame_text"):
+        animate.frame_text.remove()
+
+    # Add the current frame number
+
+    current_time = animation_start + timedelta(seconds=frame * time_resolution)
+    animate.frame_text = plt.text(0, -30, f"{current_time}", fontsize=12)
+
+
+def depot_activity_animation(area_blocks, area_occupancy, animation_start: datetime, animation_range=None):
+    """
+    This function visualizes the depot activity as an animation using matplotlib
+    :return: A plotly figure object
+    """
+
+    if animation_range is None:
+        #TODO re-write later
+        animation_range = range(1000, 2000)
+    area_dict, fig = depot_layout(area_blocks)
+    ani = animation.FuncAnimation(
+        fig,
+        animate,
+        frames=animation_range,
+        interval=1,
+        fargs=(area_dict, area_occupancy, animation_start),
+    )
+    ani.save("depot_activity.mp4", writer="ffmpeg", fps=5)
