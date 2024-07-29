@@ -15,14 +15,17 @@ from eflips.model import (
     EventType,
     Area,
     AreaType,
-    Process, Depot,
+    Process,
+    Depot,
 )
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import or_
 
+from eflips.eval.output.util import _get_slot_occupancy
+
 
 def departure_arrival_soc(
-        scenario_id: int, session: sqlalchemy.orm.session.Session
+    scenario_id: int, session: sqlalchemy.orm.session.Session
 ) -> pd.DataFrame:
     """
     This function creates a dataframe with the SoC at departure and arrival for each trip.
@@ -95,7 +98,7 @@ def departure_arrival_soc(
 
 
 def depot_event(
-        scenario_id: int, session: Session, vehicle_ids: None | int | List[int] = None
+    scenario_id: int, session: Session, vehicle_ids: None | int | List[int] = None
 ) -> pd.DataFrame:
     """
     This function creates a dataframe with all the events at the depot for a given scenario.
@@ -192,10 +195,10 @@ def depot_event(
 
 
 def power_and_occupancy(
-        aread_id: int | Iterable[int],
-        session: sqlalchemy.orm.session.Session,
-        temporal_resolution: int = 60,
-        station_id: Optional[int | Iterable[int]] = None,
+    aread_id: int | Iterable[int],
+    session: sqlalchemy.orm.session.Session,
+    temporal_resolution: int = 60,
+    station_id: Optional[int | Iterable[int]] = None,
 ) -> pd.DataFrame:
     """
     This function creates a dataframe containing a timeseries of the power and occupancy of the given area(s).
@@ -267,8 +270,9 @@ def power_and_occupancy(
     # Add the energy to the energy series
     for event in events:
         if event.timeseries is not None:
-            this_event_times: List[datetime] = [datetime.fromisoformat(t) for t in
-                                                event.timeseries["time"]]  # type: ignore
+            this_event_times: List[datetime] = [
+                datetime.fromisoformat(t) for t in event.timeseries["time"]
+            ]  # type: ignore
             # Do not directly assign the list because lists are passed by reference
             this_event_socs: List[float] = [soc for soc in event.timeseries["soc"]]  # type: ignore
         else:
@@ -307,7 +311,7 @@ def power_and_occupancy(
 
         # Convert from SoC to enerhgy using the vehicle types battery capacity
         this_event_energy = (
-                np.array(this_event_socs) * event.vehicle.vehicle_type.battery_capacity
+            np.array(this_event_socs) * event.vehicle.vehicle_type.battery_capacity
         )  # kWh
 
         # Resample the energy to 1-second intervals
@@ -391,9 +395,9 @@ def specific_energy_consumption(scenario_id: int, session: Session) -> pd.DataFr
 
 
 def vehicle_soc(
-        vehicle_id: int,
-        session: Session,
-        timezone: Optional[zoneinfo.ZoneInfo] = zoneinfo.ZoneInfo("Europe/Berlin"),
+    vehicle_id: int,
+    session: Session,
+    timezone: Optional[zoneinfo.ZoneInfo] = zoneinfo.ZoneInfo("Europe/Berlin"),
 ) -> Tuple[pd.DataFrame, Dict[str, List[Tuple[str, datetime, datetime]]]]:
     """
     This function takes in a vehicle id and returns a description what happened to the vehicle over time.
@@ -445,8 +449,8 @@ def vehicle_soc(
         all_soc.append(event.soc_end)
 
         if (
-                event.event_type == EventType.CHARGING_DEPOT
-                or event.event_type == EventType.CHARGING_OPPORTUNITY
+            event.event_type == EventType.CHARGING_DEPOT
+            or event.event_type == EventType.CHARGING_OPPORTUNITY
         ):
             if event.area is not None:
                 name = event.area.name + " in " + event.area.depot.name
@@ -462,7 +466,7 @@ def vehicle_soc(
             )
 
     for rotation in (
-            session.query(Rotation).filter(Rotation.vehicle_id == vehicle_id).all()
+        session.query(Rotation).filter(Rotation.vehicle_id == vehicle_id).all()
     ):
         descriptions["rotation"].append(
             (
@@ -475,9 +479,14 @@ def vehicle_soc(
     return pd.DataFrame({"time": all_times, "soc": all_soc}), descriptions
 
 
-def depot_layout(session: Session, depot_id: int):
+def depot_layout(depot_id: int, session: Session) -> List[List[Area]]:
     """
+    This function returns a list of :class:`eflips.model.Area` objects representing all the areas in the depot.
 
+    :param depot_id: The unique identifier of the depot
+    :param session: A :class:`sqlalchemy.orm.session.Session` object to an eflips-model database
+
+    :return: A list of lists of :class:`eflips.model.Area` objects
 
     """
     depot = session.query(Depot).filter(Depot.id == depot_id).one()
@@ -496,37 +505,17 @@ def depot_layout(session: Session, depot_id: int):
     return area_blocks
 
 
-def _get_slot_occupancy(session: Session,
-                        area_id, slot_id, animation_start, time_resolution=120
-                        ) -> List[Tuple]:
-    events = (
-        session.query(Event)
-        .filter(Event.area_id == area_id, Event.subloc_no == slot_id)
-        .order_by(Event.time_start)
-        .all()
-    )
-
-    return [
-        (
-            max(int(
-                ceil(
-                    (event.time_start - animation_start).total_seconds()
-                    / time_resolution
-                )
-            ), 0),
-            max(int(
-                ceil(
-                    (event.time_end - animation_start).total_seconds()
-                    / time_resolution
-                )
-            ), 0),
-        )
-        for event in events
-    ]
-
-
-def depot_activity(session, depot_id, animation_start=None, time_resolution=120):
-    area_blocks = depot_layout(session, depot_id)
+def depot_activity(
+    depot_id: int, session: Session, animation_range: Tuple[datetime, datetime]
+) -> Dict[Tuple[int, int], List[Tuple]]:
+    """
+    This function returns a dictionary of the occupancy of each slot in the depot.
+    :param depot_id: the unique identifier of the depot
+    :param session: a :class:`sqlalchemy.orm.Session` object
+    :param animation_start:
+    :return:
+    """
+    area_blocks = depot_layout(depot_id, session)
 
     area_occupancy = {}
 
@@ -536,8 +525,8 @@ def depot_activity(session, depot_id, animation_start=None, time_resolution=120)
             area = areas[i]
 
             for s in range(area.capacity):
-                area_occupancy[area.id, s] = _get_slot_occupancy(session,
-                                                                 area.id, s, animation_start, time_resolution
-                                                                 )
+                area_occupancy[area.id, s] = _get_slot_occupancy(
+                    area.id, s, session, animation_range
+                )
 
     return area_occupancy
