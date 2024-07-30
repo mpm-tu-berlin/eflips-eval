@@ -271,8 +271,8 @@ def power_and_occupancy(
     for event in events:
         if event.timeseries is not None:
             this_event_times: List[datetime] = [
-                datetime.fromisoformat(t) for t in event.timeseries["time"]
-            ]  # type: ignore
+                datetime.fromisoformat(t) for t in event.timeseries["time"] # type: ignore
+            ]
             # Do not directly assign the list because lists are passed by reference
             this_event_socs: List[float] = [soc for soc in event.timeseries["soc"]]  # type: ignore
         else:
@@ -507,12 +507,12 @@ def depot_layout(depot_id: int, session: Session) -> List[List[Area]]:
 
 def depot_activity(
     depot_id: int, session: Session, animation_range: Tuple[datetime, datetime]
-) -> Dict[Tuple[int, int], List[Tuple]]:
+) -> Dict[Tuple[int, int], List[Tuple[int, int]]]:
     """
     This function returns a dictionary of the occupancy of each slot in the depot.
+    :param animation_range:
     :param depot_id: the unique identifier of the depot
     :param session: a :class:`sqlalchemy.orm.Session` object
-    :param animation_start:
     :return:
     """
     area_blocks = depot_layout(depot_id, session)

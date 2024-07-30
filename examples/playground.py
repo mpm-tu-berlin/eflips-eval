@@ -89,7 +89,7 @@ if __name__ == "__main__":
     animation = output_visualize.depot_activity_animation(
         area_blocks,
         depot_activity,
-        time_resolution=120,
         animation_range=animation_range,
+        time_resolution=120,
     )
     animation.save("depot_activity.mp4", writer="ffmpeg", fps=5)

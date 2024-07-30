@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 
 import pandas as pd
 import plotly.express as px  # type: ignore
@@ -8,15 +8,15 @@ from eflips.model import AreaType, Area
 from plotly.subplots import make_subplots  # type: ignore
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import matplotlib.patches as patches
-import matplotlib.transforms as transforms
 import matplotlib.animation as animation
 
 from eflips.eval.output.util import _draw_area, _is_occupied
 
 
 def get_color_scheme(
-    color_scheme: str,
+        color_scheme: str,
 ) -> Dict[str, str | dict[str, str] | None]:
     """
     This function returns a dictionary with the color scheme to be used in the gantt chart
@@ -118,7 +118,7 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
 
 
 def depot_event(
-    prepared_data: pd.DataFrame, color_scheme: str = "event_type"
+        prepared_data: pd.DataFrame, color_scheme: str = "event_type"
 ) -> go.Figure:
     """
     This function visualizes all events as a gantt chart using plotly
@@ -236,7 +236,7 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
     :return: a plotly figure object
     """
     prepared_data["specific_energy_consumption"] = (
-        prepared_data["energy_consumption"] / prepared_data["distance"]
+            prepared_data["energy_consumption"] / prepared_data["distance"]
     )
     bin_count = prepared_data.shape[0] // 10
     fig = go.Figure()
@@ -257,8 +257,8 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
 
 
 def vehicle_soc(
-    prepared_data: pd.DataFrame,
-    descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
+        prepared_data: pd.DataFrame,
+        descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
 ) -> go.Figure:
     """
     This function visualizes the state of charge of a vehicle over time using plotly. Optionally, it can also visualize
@@ -302,8 +302,8 @@ def vehicle_soc(
 
 
 def depot_layout(
-    area_blocks: List[List[Area]],
-) -> Tuple[Dict[int, List[patches.Rectangle]], plt.Figure]:
+        area_blocks: List[List[Area]],
+) -> Tuple[Dict[int, List[patches.Rectangle]], Figure]:
     """
     This function visualizes the depot layout using matplotlib
 
@@ -348,11 +348,11 @@ def depot_layout(
 
 
 def animate(
-    frame: int,
-    area_dict: Dict[int, List[patches.Rectangle]],
-    area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
-    animation_start: datetime,
-    time_resolution=120,
+        frame: int,
+        area_dict: Dict[int, List[patches.Rectangle]],
+        area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
+        animation_start: datetime,
+        time_resolution: int = 120,
 ) -> None:
     """
     This function animates the depot activity using matplotlib
@@ -386,7 +386,7 @@ def animate(
     ylim = plt.gca().get_ylim()
 
     # Set the text position to the top right corner
-    animate.frame_text = plt.text(
+    animate.frame_text = plt.text( # type: ignore
         xlim[1],
         ylim[1] + 20,
         f"{current_time}",
@@ -397,10 +397,10 @@ def animate(
 
 
 def depot_activity_animation(
-    area_blocks: List[List[Area]],
-    area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
-    time_resolution: int = 120,
-    animation_range: Optional[Tuple[datetime, datetime]] = None,
+        area_blocks: List[List[Area]],
+        area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
+        animation_range: Tuple[datetime, datetime],
+        time_resolution: int = 120,
 ) -> animation.FuncAnimation:
     """
     This function visualizes the depot activity as an animation using matplotlib
@@ -409,37 +409,21 @@ def depot_activity_animation(
     :param area_occupancy: A dictionary with the following key:
     - (area_id, slot_id): A tuple representing the area and slot id
     The value is a list of 2-tuples representing the start and end time of the occupancy in seconds since the animation start
+    :param animation_range: A tuple representing the start and end time of the to-be-animated events.
     :param time_resolution: Time interval between 2 frames in seconds
-    :param animation_start: The start time of the animation in datetime format
-    :param animation_range: A tuple representing the start and end time of the to-be-animated events. If None, all the events will be animated
+
     :return: a :class:`matplotlib.animation.FuncAnimation` object
     """
 
-    if animation_range is None:
-
-        frames_begin = 0
-        # find the latest time in seconds in the area_occupancy
-        latest_time = 0
-        for area_id, slot_id in area_occupancy.keys():
-            slot_occupancy = area_occupancy[(area_id, slot_id)]
-            latest_times = [t[1] for t in slot_occupancy]
-            if len(latest_times) != 0:
-                latest_time = max(max(latest_times), latest_time)
-
-        frames_end = int((latest_time / time_resolution) + 1)
-        frames_range = range(frames_begin, frames_end)
-    else:
-        frames_begin = 0
-        frames_end = int(
-            (animation_range[1] - animation_range[0]).total_seconds() / time_resolution
-        )
-        frames_range = range(frames_begin, frames_end)
+    frames_end = int(
+        (animation_range[1] - animation_range[0]).total_seconds() / time_resolution
+    )
 
     area_dict, fig = depot_layout(area_blocks)
     ani = animation.FuncAnimation(
         fig,
-        animate,
-        frames=frames_range,
+        animate, # type: ignore
+        frames=frames_end,
         interval=1,
         fargs=(area_dict, area_occupancy, animation_range[0], time_resolution),
     )
