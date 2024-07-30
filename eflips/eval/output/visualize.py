@@ -16,7 +16,7 @@ from eflips.eval.output.util import _draw_area, _is_occupied
 
 
 def get_color_scheme(
-        color_scheme: str,
+    color_scheme: str,
 ) -> Dict[str, str | dict[str, str] | None]:
     """
     This function returns a dictionary with the color scheme to be used in the gantt chart
@@ -118,7 +118,7 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
 
 
 def depot_event(
-        prepared_data: pd.DataFrame, color_scheme: str = "event_type"
+    prepared_data: pd.DataFrame, color_scheme: str = "event_type"
 ) -> go.Figure:
     """
     This function visualizes all events as a gantt chart using plotly
@@ -236,7 +236,7 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
     :return: a plotly figure object
     """
     prepared_data["specific_energy_consumption"] = (
-            prepared_data["energy_consumption"] / prepared_data["distance"]
+        prepared_data["energy_consumption"] / prepared_data["distance"]
     )
     bin_count = prepared_data.shape[0] // 10
     fig = go.Figure()
@@ -257,8 +257,8 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
 
 
 def vehicle_soc(
-        prepared_data: pd.DataFrame,
-        descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
+    prepared_data: pd.DataFrame,
+    descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
 ) -> go.Figure:
     """
     This function visualizes the state of charge of a vehicle over time using plotly. Optionally, it can also visualize
@@ -302,7 +302,7 @@ def vehicle_soc(
 
 
 def depot_layout(
-        area_blocks: List[List[Area]],
+    area_blocks: List[List[Area]],
 ) -> Tuple[Dict[int, List[patches.Rectangle]], Figure]:
     """
     This function visualizes the depot layout using matplotlib
@@ -348,11 +348,11 @@ def depot_layout(
 
 
 def animate(
-        frame: int,
-        area_dict: Dict[int, List[patches.Rectangle]],
-        area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
-        animation_start: datetime,
-        time_resolution: int = 120,
+    frame: int,
+    area_dict: Dict[int, List[patches.Rectangle]],
+    area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
+    animation_start: datetime,
+    time_resolution: int = 120,
 ) -> None:
     """
     This function animates the depot activity using matplotlib
@@ -386,7 +386,7 @@ def animate(
     ylim = plt.gca().get_ylim()
 
     # Set the text position to the top right corner
-    animate.frame_text = plt.text( # type: ignore
+    animate.frame_text = plt.text(  # type: ignore
         xlim[1],
         ylim[1] + 20,
         f"{current_time}",
@@ -397,10 +397,10 @@ def animate(
 
 
 def depot_activity_animation(
-        area_blocks: List[List[Area]],
-        area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
-        animation_range: Tuple[datetime, datetime],
-        time_resolution: int = 120,
+    area_blocks: List[List[Area]],
+    area_occupancy: Dict[Tuple[int, int], List[Tuple[int, int]]],
+    animation_range: Tuple[datetime, datetime],
+    time_resolution: int = 120,
 ) -> animation.FuncAnimation:
     """
     This function visualizes the depot activity as an animation using matplotlib
@@ -422,7 +422,7 @@ def depot_activity_animation(
     area_dict, fig = depot_layout(area_blocks)
     ani = animation.FuncAnimation(
         fig,
-        animate, # type: ignore
+        animate,  # type: ignore
         frames=frames_end,
         interval=1,
         fargs=(area_dict, area_occupancy, animation_range[0], time_resolution),
