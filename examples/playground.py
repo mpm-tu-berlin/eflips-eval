@@ -1,6 +1,8 @@
 import os
+from datetime import datetime
 
-from eflips.model import Area, Vehicle
+import pytz
+from eflips.model import Area, Vehicle, Depot
 
 import eflips.eval.input.prepare as input_prepare
 import eflips.eval.output.prepare as output_prepare
@@ -48,9 +50,7 @@ if __name__ == "__main__":
 
     # Example of using the depot event visualization
     prepared_data = output_prepare.depot_event(SCENARIO_ID, session)
-    fig = output_visualize.depot_event(
-        prepared_data,
-    )
+    fig = output_visualize.depot_event(prepared_data, color_scheme="event_type")
     fig.show()
     #
     # Example of using the vehicle soc visualization
@@ -65,3 +65,31 @@ if __name__ == "__main__":
     )
     fig = output_visualize.vehicle_soc(prepared_data, descriptions)
     fig.show()
+
+    # Example of using the depot activity visualization
+    depot_id = (
+        session.query(Depot.id)
+        .filter(Depot.scenario_id == SCENARIO_ID)
+        .limit(1)
+        .one()[0]
+    )
+
+    area_blocks = output_prepare.depot_layout(depot_id, session)
+    _, fig = output_visualize.depot_layout(area_blocks)
+    fig.show()
+
+    tz = pytz.timezone("Europe/Berlin")
+
+    animation_range = (
+        tz.localize(datetime(2023, 7, 1, 21, 0)),
+        tz.localize(datetime(2023, 7, 2, 2, 0)),
+    )
+    depot_activity = output_prepare.depot_activity(depot_id, session, animation_range)
+
+    animation = output_visualize.depot_activity_animation(
+        area_blocks,
+        depot_activity,
+        animation_range=animation_range,
+        time_resolution=120,
+    )
+    animation.save("depot_activity.mp4", writer="ffmpeg", fps=5)

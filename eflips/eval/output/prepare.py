@@ -1,4 +1,5 @@
 import zoneinfo
+from math import ceil
 from datetime import datetime, timedelta
 from typing import Dict, List, Iterable, Tuple, Optional
 
@@ -6,9 +7,21 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import sqlalchemy
-from eflips.model import Event, Rotation, Vehicle, Trip, EventType
+from eflips.model import (
+    Event,
+    Rotation,
+    Vehicle,
+    Trip,
+    EventType,
+    Area,
+    AreaType,
+    Process,
+    Depot,
+)
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import or_
+
+from eflips.eval.output.util import _get_slot_occupancy
 
 
 def departure_arrival_soc(
@@ -120,6 +133,26 @@ def depot_event(
 
     events_from_db = events_from_db_q.all()
 
+    direct_charging_areas = (
+        session.query(Area)
+        .filter(
+            Area.processes.any(Process.electric_power.isnot(None)),
+            Area.area_type == AreaType.DIRECT_ONESIDE,
+        )
+        .all()
+    )
+    direct_charging_area_ids = [area.id for area in direct_charging_areas]
+
+    line_charging_areas = (
+        session.query(Area)
+        .filter(
+            Area.processes.any(Process.electric_power.isnot(None)),
+            Area.area_type == AreaType.LINE,
+        )
+        .all()
+    )
+    line_charging_area_ids = [area.id for area in line_charging_areas]
+
     for event in events_from_db:
         location = None
         if event.area_id is not None:
@@ -128,6 +161,14 @@ def depot_event(
             location = "Trip"
         elif event.station_id is not None:
             location = "Station"
+
+        area_type = None
+        if event.area_id in direct_charging_area_ids:
+            area_type = "Direct"
+        elif event.area_id in line_charging_area_ids:
+            area_type = "Line"
+        else:
+            area_type = "Other"
 
         event_list_for_plot.append(
             {
@@ -143,6 +184,7 @@ def depot_event(
                 "trip_id": event.trip_id,
                 "station_id": event.station_id,
                 "location": location,
+                "area_type": area_type,
             }
         )
 
@@ -228,7 +270,9 @@ def power_and_occupancy(
     # Add the energy to the energy series
     for event in events:
         if event.timeseries is not None:
-            this_event_times: List[datetime] = [datetime.fromisoformat(t) for t in event.timeseries["time"]]  # type: ignore
+            this_event_times: List[datetime] = [
+                datetime.fromisoformat(t) for t in event.timeseries["time"]  # type: ignore
+            ]
             # Do not directly assign the list because lists are passed by reference
             this_event_socs: List[float] = [soc for soc in event.timeseries["soc"]]  # type: ignore
         else:
@@ -433,3 +477,56 @@ def vehicle_soc(
         )
 
     return pd.DataFrame({"time": all_times, "soc": all_soc}), descriptions
+
+
+def depot_layout(depot_id: int, session: Session) -> List[List[Area]]:
+    """
+    This function returns a list of :class:`eflips.model.Area` objects representing all the areas in the depot.
+
+    :param depot_id: The unique identifier of the depot
+    :param session: A :class:`sqlalchemy.orm.session.Session` object to an eflips-model database
+
+    :return: A list of lists of :class:`eflips.model.Area` objects
+
+    """
+    depot = session.query(Depot).filter(Depot.id == depot_id).one()
+    processes = depot.default_plan.processes
+
+    # TODO assuming standby departure is in the same area as charging. Could be potential enhancement
+    area_blocks = [processes.areas for processes in processes[:-1]]
+
+    # Find the area without any processes as waiting area
+    total_areas = depot.areas
+    for area in total_areas:
+        if len(area.processes) == 0:
+            area_blocks.insert(0, [area])
+            break
+
+    return area_blocks
+
+
+def depot_activity(
+    depot_id: int, session: Session, animation_range: Tuple[datetime, datetime]
+) -> Dict[Tuple[int, int], List[Tuple[int, int]]]:
+    """
+    This function returns a dictionary of the occupancy of each slot in the depot.
+    :param animation_range:
+    :param depot_id: the unique identifier of the depot
+    :param session: a :class:`sqlalchemy.orm.Session` object
+    :return:
+    """
+    area_blocks = depot_layout(depot_id, session)
+
+    area_occupancy = {}
+
+    for j in range(len(area_blocks)):
+        areas = area_blocks[j]
+        for i in range(len(areas)):
+            area = areas[i]
+
+            for s in range(area.capacity):
+                area_occupancy[area.id, s] = _get_slot_occupancy(
+                    area.id, s, session, animation_range
+                )
+
+    return area_occupancy
