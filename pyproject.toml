@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eflips-eval"
-version = "1.5.0"
+version = "1.5.1"
 description = ""
 authors = [
     "Ludger Heide <ludger.heide@lhtechnologies.de>",
@@ -20,7 +20,7 @@ dash-cytoscape = "^1.0.1"
 shapely = "^2.0.5"
 folium = "^0.17.0"
 seaborn = "^0.13.2"
-matplotlib = "^3.9.1"
+matplotlib = "^3.9.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.7.1"
