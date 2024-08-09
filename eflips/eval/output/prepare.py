@@ -1,12 +1,9 @@
-import zoneinfo
-from math import ceil
-from datetime import datetime, timedelta
-from typing import Dict, List, Iterable, Tuple, Optional
-
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import sqlalchemy
+import zoneinfo
+from datetime import datetime, timedelta
 from eflips.model import (
     Event,
     Rotation,
@@ -18,8 +15,10 @@ from eflips.model import (
     Process,
     Depot,
 )
+from math import ceil
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import or_
+from typing import Dict, List, Iterable, Tuple, Optional
 
 from eflips.eval.output.util import _get_slot_occupancy
 
@@ -304,9 +303,8 @@ def power_and_occupancy(
             for i in range(len(this_event_times) - 1)
         )
 
-        assert all(
-            this_event_socs[i] <= this_event_socs[i + 1]
-            for i in range(len(this_event_socs) - 1)
+        assert min(np.diff(this_event_socs)) >= 0 or np.isclose(
+            min(np.diff(this_event_socs)), 0
         )
 
         # Convert from SoC to enerhgy using the vehicle types battery capacity
