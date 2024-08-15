@@ -3,6 +3,7 @@ import numpy.typing as npt
 import pandas as pd
 import sqlalchemy
 import zoneinfo
+from datetime import datetime
 from datetime import datetime, timedelta
 from eflips.model import (
     Event,
@@ -198,6 +199,8 @@ def power_and_occupancy(
     session: sqlalchemy.orm.session.Session,
     temporal_resolution: int = 60,
     station_id: Optional[int | Iterable[int]] = None,
+    sim_start_time: Optional[datetime] = None,
+    sim_end_time: Optional[datetime] = None,
 ) -> pd.DataFrame:
     """
     This function creates a dataframe containing a timeseries of the power and occupancy of the given area(s).
@@ -212,6 +215,8 @@ def power_and_occupancy(
     :param station_id: The id of the station for which to create the dataframe. If None, no station is used.
                        In order to only display the station, set aread_id to None or an empty list and provide the
                          station id(s). Default is None.
+    :param sim_start_time: The start time of the timeseries. If set, no data before this time is included. Default is None.
+    :param sim_end_time: The end time of the timeseries. If set, no data after this time is included. Default is None.
     :return: A pandas DataFrame
     """
 
@@ -348,6 +353,12 @@ def power_and_occupancy(
             "occupancy": occupancy[:-1],
         }
     )
+
+    if sim_start_time is not None:
+        result = result[result["time"] >= start_time]
+    if sim_end_time is not None:
+        result = result[result["time"] <= end_time]
+
     return result
 
 
