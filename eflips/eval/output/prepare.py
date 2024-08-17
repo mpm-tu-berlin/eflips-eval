@@ -1,10 +1,11 @@
+import zoneinfo
+from datetime import datetime, timedelta
+from typing import Dict, List, Iterable, Tuple, Optional
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import sqlalchemy
-import zoneinfo
-from datetime import datetime
-from datetime import datetime, timedelta
 from eflips.model import (
     Event,
     Rotation,
@@ -16,10 +17,8 @@ from eflips.model import (
     Process,
     Depot,
 )
-from math import ceil
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import or_
-from typing import Dict, List, Iterable, Tuple, Optional
 
 from eflips.eval.output.util import _get_slot_occupancy
 
@@ -355,9 +354,9 @@ def power_and_occupancy(
     )
 
     if sim_start_time is not None:
-        result = result[result["time"] >= start_time]
+        result = result[result["time"] >= sim_start_time]
     if sim_end_time is not None:
-        result = result[result["time"] <= end_time]
+        result = result[result["time"] <= sim_end_time]
 
     return result
 
