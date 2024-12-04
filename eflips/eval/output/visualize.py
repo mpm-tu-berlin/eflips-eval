@@ -226,13 +226,13 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
     """
     Creates a histogram of the specific energy consumption of the vehicles, colored by vehicle type
     :param prepared_data: A DataFrame with the following columns:
-        - trip_id: the unique identifier of the trip
-        - route_id: the unique identifier of the route
-        - route_name: the name of the route
-        - distance: the distance of the route in km
-        - energy_consumption: the energy consumption of the trip in kWh
-        - vehicle_type_id: the unique identifier of the vehicle type
-        - vehicle_type_name: the name of the vehicle type
+    - trip_id: the unique identifier of the trip
+    - route_id: the unique identifier of the route
+    - route_name: the name of the route
+    - distance: the distance of the route in km
+    - energy_consumption: the energy consumption of the trip in kWh
+    - vehicle_type_id: the unique identifier of the vehicle type
+    - vehicle_type_name: the name of the vehicle type
     :return: a plotly figure object
     """
     prepared_data["specific_energy_consumption"] = (
@@ -263,16 +263,18 @@ def vehicle_soc(
     """
     This function visualizes the state of charge of a vehicle over time using plotly. Optionally, it can also visualize
     event types or event locations by vertical rectangles.
-    :param prepared_data: A dataframe with the following columns:
-    - time: the time at which the SoC was recorded
-    - soc: the state of charge at the given time
 
+    :param prepared_data: A dataframe with the following columns:
+        - time: the time at which the SoC was recorded
+        - soc: the state of charge at the given time
     :param descriptions: A dictionary with the following keys
-    - "trip": A list of route names and the time the trip started and ended
-    - "rotation": A list of rotation names and the time the rotation started and ended
-    - "charging": A list of the location of the charging and the time the charging started and ended
-    for each key, the value is a list of tuples with the following structure:
-    - (name, start_time, end_time)
+        - "trip": A list of route names and the time the trip started and ended
+        - "rotation": A list of rotation names and the time the rotation started and ended
+        - "charging": A list of the location of the charging and the time the charging started and ended
+
+        for each key, the value is a list of tuples with the following structure:
+            - (name, start_time, end_time)
+
 
     :return: A plotly figure object
     """
@@ -308,8 +310,8 @@ def depot_layout(
     This function visualizes the depot layout using matplotlib
 
     :param area_blocks: a list of lists of :class:`eflips.model.Area` objects.
-    :return: a dictionary with the area id as the key and a list of :class:`matplotlib.patches.Rectangle` objects as the value
-    and a :class:`matplotlib.figure.Figure` object
+
+    :return: a dictionary with the area id as the key and a list of :class:`matplotlib.patches.Rectangle` objects as the value and a :class:`matplotlib.figure.Figure` object
     """
     plt.rcParams["figure.dpi"] = 600
     fig, ax = plt.subplots()
