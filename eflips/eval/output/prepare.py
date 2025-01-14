@@ -257,8 +257,11 @@ def power_and_occupancy(
     )
 
     # Create a 1-second interval time series
+    utc = zoneinfo.ZoneInfo("UTC")
     time: npt.NDArray[np.datetime64] = np.arange(
-        start_time, end_time, timedelta(seconds=temporal_resolution)
+        start_time.astimezone(utc).replace(tzinfo=None),
+        end_time.astimezone(utc).replace(tzinfo=None),
+        timedelta(seconds=temporal_resolution),
     )
     time_as_unix = np.arange(
         start_time.timestamp(), end_time.timestamp(), temporal_resolution
@@ -341,12 +344,11 @@ def power_and_occupancy(
     # Create the dataframe
     # First, change the time to the local timezone
 
-    tz = datetime.now().astimezone().tzinfo
-    time_as_local_tz = pd.to_datetime(time).tz_localize("UTC").tz_convert(tz)
+    time_localized = pd.to_datetime(time).tz_localize("UTC")
 
     result = pd.DataFrame(
         {
-            "time": time_as_local_tz[:-1],
+            "time": time_localized[:-1],
             "power": power,
             "occupancy": occupancy[:-1],
         }
