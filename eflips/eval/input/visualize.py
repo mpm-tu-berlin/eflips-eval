@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+
 import dash_cytoscape as cyto  # type: ignore
 import folium  # type: ignore
 import pandas as pd
@@ -7,7 +9,9 @@ import seaborn as sns  # type: ignore
 from eflips.model import TripType
 
 
-def rotation_info(prepared_data: pd.DataFrame) -> go.Figure:
+def rotation_info(
+    prepared_data: pd.DataFrame, timezone: ZoneInfo = ZoneInfo("Europe/Berlin")
+) -> go.Figure:
     """
     This function visualizes the rotation information using plotly
 
@@ -27,6 +31,10 @@ def rotation_info(prepared_data: pd.DataFrame) -> go.Figure:
 
     :return: A plotly figure object
     """
+
+    # Go through the dataframe and fix the timezones
+    for col in ["time_start", "time_end"]:
+        prepared_data[col] = prepared_data[col].dt.tz_convert(timezone)
 
     fig = px.timeline(
         prepared_data,

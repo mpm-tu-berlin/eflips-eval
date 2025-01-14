@@ -1,16 +1,16 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
+from zoneinfo import ZoneInfo
 
+import matplotlib.animation as animation
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.express as px  # type: ignore
 import plotly.graph_objs as go  # type: ignore
 from eflips.model import AreaType, Area
-from plotly.subplots import make_subplots  # type: ignore
-
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-import matplotlib.patches as patches
-import matplotlib.animation as animation
+from plotly.subplots import make_subplots  # type: ignore
 
 from eflips.eval.output.util import _draw_area, _is_occupied
 
@@ -118,7 +118,9 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
 
 
 def depot_event(
-    prepared_data: pd.DataFrame, color_scheme: str = "event_type"
+    prepared_data: pd.DataFrame,
+    color_scheme: str = "event_type",
+    timezone: ZoneInfo = ZoneInfo("Europe/Berlin"),
 ) -> go.Figure:
     """
     This function visualizes all events as a gantt chart using plotly
@@ -139,8 +141,12 @@ def depot_event(
     - location: the location of the event. This could be "depot", "trip" or "station"
 
     :return: A plotly figure object
-
     """
+
+    # Go through the dataframe and fix the timezones
+    for col in ["time_start", "time_end"]:
+        prepared_data[col] = prepared_data[col].dt.tz_convert(timezone)
+
     color_scheme_dict = get_color_scheme(color_scheme)
     color = color_scheme_dict["color"]
     color_discrete_map = color_scheme_dict["color_discrete_map"]
@@ -191,7 +197,9 @@ def depot_event(
     return fig
 
 
-def power_and_occupancy(prepared_data: pd.DataFrame) -> go.Figure:
+def power_and_occupancy(
+    prepared_data: pd.DataFrame, timezone: ZoneInfo = ZoneInfo("Europe/Berlin")
+) -> go.Figure:
     """
     This function visualizes the power and occupancy using plotly
     :param prepared_data: The result of the power_and_occupancy function, a dataframe with the following columns:
@@ -202,6 +210,10 @@ def power_and_occupancy(prepared_data: pd.DataFrame) -> go.Figure:
 
     :return: A plotly figure object
     """
+
+    # Go through the dataframe and fix the timezones
+    prepared_data["time"] = prepared_data["time"].dt.tz_convert(timezone)
+
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
         go.Scatter(x=prepared_data["time"], y=prepared_data["power"], name="Power"),
@@ -259,6 +271,7 @@ def specific_energy_consumption(prepared_data: pd.DataFrame) -> go.Figure:
 def vehicle_soc(
     prepared_data: pd.DataFrame,
     descriptions: Dict[str, List[Tuple[str, datetime, datetime]]],
+    timezone: ZoneInfo = ZoneInfo("Europe/Berlin"),
 ) -> go.Figure:
     """
     This function visualizes the state of charge of a vehicle over time using plotly. Optionally, it can also visualize
@@ -278,6 +291,15 @@ def vehicle_soc(
 
     :return: A plotly figure object
     """
+
+    # Go through the prepared_data and fix the timezones
+    prepared_data["time"] = prepared_data["time"].dt.tz_convert(timezone)
+    # For the event descriptions, fix the timezones
+    for event_type, event_list in descriptions.items():
+        descriptions[event_type] = [
+            (name, start_time.astimezone(timezone), end_time.astimezone(timezone))
+            for (name, start_time, end_time) in event_list
+        ]
 
     fig = px.line(
         prepared_data,
