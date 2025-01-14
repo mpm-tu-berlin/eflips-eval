@@ -69,7 +69,7 @@ def rotation_info(
         # rotation.
         line_names: Dict[str, int] = {}
         for trip in rotation.trips:
-            line_name = trip.route.line.name
+            line_name = trip.route.line.name if trip.route.line is not None else "N/A"
             if line_name not in line_names:
                 line_names[line_name] = 0
             line_names[line_name] += 1
