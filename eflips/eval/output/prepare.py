@@ -420,6 +420,7 @@ def vehicle_soc(
     The kinds of events are:
     - "rotation": A list of rotation names and the time the rotation started and ended
     - "charging": A list of the location of the charging and the time the charging started and ended
+    - "trip": A list of the route name and the time the trip started and ended
 
     :param timezone: Explicit timezone information to use for the visualization. Default is Europe/Berlin
     :param vehicle_id: the unique identifier of the vehicle
@@ -437,6 +438,7 @@ def vehicle_soc(
     descriptions: Dict[str, List[Tuple[str, datetime, datetime]]] = {
         "rotation": [],
         "charging": [],
+        "trip": [],
     }
 
     # Go through all events and connect the soc_start and soc_end and time_start and time_end
@@ -485,6 +487,14 @@ def vehicle_soc(
                 rotation.trips[-1].arrival_time.astimezone(timezone),
             )
         )
+        for trip in rotation.trips:
+            descriptions["trip"].append(
+                (
+                    trip.route.name,
+                    trip.departure_time.astimezone(timezone),
+                    trip.arrival_time.astimezone(timezone),
+                )
+            )
 
     return pd.DataFrame({"time": all_times, "soc": all_soc}), descriptions
 
