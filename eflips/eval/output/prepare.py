@@ -205,7 +205,8 @@ def power_and_occupancy(
     The columns are:
     - time: the time at which the data was recorded
     - power: the summed power consumption of the area(s) at the given time
-    - occupancy: the summed occupancy of the area(s) at the given time
+    - occupancy_charging: the summed occupancy (actively charing vehicles) of the area(s) at the given time
+    - occupancy_total: the summed occupancy of the area(s) at the given time, including all events
 
     :param area_id: The id of the area for which to create the dataframe
     :param session: An sqlalchemy session to an eflips-model database
@@ -267,7 +268,8 @@ def power_and_occupancy(
         start_time.timestamp(), end_time.timestamp(), temporal_resolution
     )
     energy = np.zeros(time.shape[0])
-    occupancy = np.zeros(time.shape[0])
+    occupancy_charging = np.zeros(time.shape[0])
+    occupancy_total = np.zeros(time.shape[0])
 
     # For each event:
     # Convert SoC to energy
@@ -336,7 +338,12 @@ def power_and_occupancy(
             left=0,
             right=0,
         )
-        occupancy += this_event_occupancy
+        if (
+            event.event_type == EventType.CHARGING_OPPORTUNITY
+            or event.event_type == EventType.CHARGING_DEPOT
+        ):
+            occupancy_charging += this_event_occupancy
+        occupancy_total += this_event_occupancy
 
     # Calculate the power from the energy
     power = (np.diff(energy) / np.diff(time_as_unix).astype(float)) * 3600  # kW
@@ -350,7 +357,8 @@ def power_and_occupancy(
         {
             "time": time_localized[:-1],
             "power": power,
-            "occupancy": occupancy[:-1],
+            "occupancy_charging": occupancy_charging[:-1],
+            "occupancy_total": occupancy_total[:-1],
         }
     )
 
