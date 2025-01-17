@@ -206,7 +206,8 @@ def power_and_occupancy(
 
     - time: the time at which the power and occupancy was recorded
     - power: the power at the given time
-    - occupancy: the occupancy at the given time
+    - occupancy_charging: the summed occupancy (actively charing vehicles) of the area(s) at the given time
+    - occupancy_total: the summed occupancy of the area(s) at the given time, including all events
 
     :return: A plotly figure object
     """
@@ -221,7 +222,17 @@ def power_and_occupancy(
     )
     fig.add_trace(
         go.Scatter(
-            x=prepared_data["time"], y=prepared_data["occupancy"], name="Occupancy"
+            x=prepared_data["time"],
+            y=prepared_data["occupancy_charging"],
+            name="Occupancy (Charging)",
+        ),
+        secondary_y=True,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=prepared_data["time"],
+            y=prepared_data["occupancy_total"],
+            name="Occupancy (Total)",
         ),
         secondary_y=True,
     )
