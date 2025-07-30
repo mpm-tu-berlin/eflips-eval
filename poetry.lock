@@ -18,7 +18,7 @@ version = "1.14.0"
 description = "A database migration tool for SQLAlchemy."
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev"]
+groups = ["dev"]
 files = [
     {file = "alembic-1.14.0-py3-none-any.whl", hash = "sha256:99bd884ca390466db5e27ffccff1d179ec5c05c965cfefc0607e69f9e411cb25"},
     {file = "alembic-1.14.0.tar.gz", hash = "sha256:b00892b53b3642d0b8dbedba234dbf1924b69be83a9a769d5a624b01094e304b"},
@@ -120,7 +120,6 @@ files = [
     {file = "blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc"},
     {file = "blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [[package]]
 name = "branca"
@@ -480,7 +479,6 @@ files = [
     {file = "dash-2.18.2-py3-none-any.whl", hash = "sha256:0ce0479d1bc958e934630e2de7023b8a4558f23ce1f9f5a4b34b65eb3903a869"},
     {file = "dash-2.18.2.tar.gz", hash = "sha256:20e8404f73d0fe88ce2eae33c25bbc513cbe52f30d23a401fa5f24dbb44296c8"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.dependencies]
 dash-core-components = "2.0.0"
@@ -515,7 +513,6 @@ files = [
     {file = "dash_core_components-2.0.0-py3-none-any.whl", hash = "sha256:52b8e8cce13b18d0802ee3acbc5e888cb1248a04968f962d63d070400af2e346"},
     {file = "dash_core_components-2.0.0.tar.gz", hash = "sha256:c6733874af975e552f95a1398a16c2ee7df14ce43fa60bb3718a3c6e0b63ffee"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [[package]]
 name = "dash-cytoscape"
@@ -527,7 +524,6 @@ groups = ["main", "dev"]
 files = [
     {file = "dash_cytoscape-1.0.2.tar.gz", hash = "sha256:a61019d2184d63a2b3b5c06d056d3b867a04223a674cc3c7cf900a561a9a59aa"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.dependencies]
 dash = "*"
@@ -546,7 +542,6 @@ files = [
     {file = "dash_html_components-2.0.0-py3-none-any.whl", hash = "sha256:b42cc903713c9706af03b3f2548bda4be7307a7cf89b7d6eae3da872717d1b63"},
     {file = "dash_html_components-2.0.0.tar.gz", hash = "sha256:8703a601080f02619a6390998e0b3da4a5daabe97a1fd7a9cebc09d015f26e50"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [[package]]
 name = "dash-table"
@@ -559,7 +554,6 @@ files = [
     {file = "dash_table-5.0.0-py3-none-any.whl", hash = "sha256:19036fa352bb1c11baf38068ec62d172f0515f73ca3276c79dee49b95ddc16c9"},
     {file = "dash_table-5.0.0.tar.gz", hash = "sha256:18624d693d4c8ef2ddec99a6f167593437a7ea0bf153aa20f318c170c5bc7308"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [[package]]
 name = "distlib"
@@ -604,38 +598,14 @@ simpy = ">=4.0.1,<5.0.0"
 
 [[package]]
 name = "eflips-depot"
-version = "4.4.3"
-description = "Depot Simulation for eFLIPS"
-optional = false
-python-versions = "<4.0,>=3.10"
-groups = ["dev"]
-markers = "python_version >= \"3.12\""
-files = [
-    {file = "eflips_depot-4.4.3-py3-none-any.whl", hash = "sha256:5a6c82cb89d1cfa16f72be8c50cbbba708f643504929cc1ef8a4a99dc19808fa"},
-    {file = "eflips_depot-4.4.3.tar.gz", hash = "sha256:11d259f26e3004660a0414484907cf7dae0e7ff9ccccbae942e616bcd611cf1d"},
-]
-
-[package.dependencies]
-eflips = ">=0.1.3,<0.2.0"
-eflips-model = ">=6.0.0,<7.0.0"
-pandas = ">=2.2.0,<3.0.0"
-scipy = ">=1.14.0,<2.0.0"
-simpy = ">=4.0.1,<5.0.0"
-tqdm = ">=4.67.0,<5.0.0"
-xlrd = "<=1.2.0"
-xlsxwriter = ">=3.1.9,<4.0.0"
-
-[[package]]
-name = "eflips-depot"
-version = "4.10.0"
+version = "4.11.0"
 description = "Depot Simulation for eFLIPS"
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
-    {file = "eflips_depot-4.10.0-py3-none-any.whl", hash = "sha256:c4a63777108e842d62ad83a2680fe904ab7ba23b98701fb0ce004b867b8e9d38"},
-    {file = "eflips_depot-4.10.0.tar.gz", hash = "sha256:b3eed25e9279e9070d747a2d6c081c0959ca2ecc3b58c9d42278794e957a0102"},
+    {file = "eflips_depot-4.11.0-py3-none-any.whl", hash = "sha256:c4f1902948b3098b3a193e244e27275bbebb4c2cb7370fa3a7072a82c58f3cde"},
+    {file = "eflips_depot-4.11.0.tar.gz", hash = "sha256:fd778afeb9fbfda8461e6105f4cb161da370aa2dee26a64a1a1ed7248f59de8e"},
 ]
 
 [package.dependencies]
@@ -651,33 +621,11 @@ xlsxwriter = ">=3.1.9,<4.0.0"
 
 [[package]]
 name = "eflips-model"
-version = "6.0.11"
-description = "A common data model for the eflips family of electric vehicle simulation & optimization tools."
-optional = false
-python-versions = "<4.0,>=3.10"
-groups = ["main", "dev"]
-markers = "python_version >= \"3.12\""
-files = [
-    {file = "eflips_model-6.0.11-py3-none-any.whl", hash = "sha256:8757979f86e0babfed9677f858cbb7092e30d5d46a0a4373e516bd1f2daa6a9c"},
-    {file = "eflips_model-6.0.11.tar.gz", hash = "sha256:450bd17807e21f37e9bbe23b307867a737f14642ca98a0a4ee7c315616f06e15"},
-]
-
-[package.dependencies]
-alembic = ">=1.12.1,<2.0.0"
-geoalchemy2 = ">=0.14.2,<0.15.0"
-numpy = ">=2.2.0,<3.0.0"
-pandas = ">=2.2.0,<3.0.0"
-psycopg2-binary = ">=2.9.10,<3.0.0"
-sqlalchemy = ">=2.0.23,<3.0.0"
-
-[[package]]
-name = "eflips-model"
 version = "8.1.0"
 description = "A common data model for the eflips family of electric vehicle simulation & optimization tools."
 optional = false
 python-versions = "<4.0,>=3.10"
-groups = ["main", "dev"]
-markers = "python_version < \"3.12\""
+groups = ["dev"]
 files = [
     {file = "eflips_model-8.1.0-py3-none-any.whl", hash = "sha256:d6669214609c2abbe6d180c975b0cecaf910d7ed21980b3664d542454f8c0d3d"},
     {file = "eflips_model-8.1.0.tar.gz", hash = "sha256:0c2e07857fd5aab69fd8281a3e2f7ae8c9747ceef0b02416b5fd7c83c8299bba"},
@@ -700,7 +648,6 @@ description = "A collection of pre-simulation optimization algorithms for eFLIPS
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "eflips_opt-0.3.1-py3-none-any.whl", hash = "sha256:2188b8325de9e8f44cf9049e510b1ae53904a07652451db10b4690e737eaf8c7"},
     {file = "eflips_opt-0.3.1.tar.gz", hash = "sha256:cc9e40c249f49497058c9a76c1e59cd23d920ca603c8ceadb16e41c701bd4417"},
@@ -729,7 +676,6 @@ description = "Vehicle Scheduling in Rust for eFLIPS."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "eflips_schedule_rust-2.0.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fb7908e6351ec03dd40ee32ee6fe5732d1329b345b0dafeb7cf7b78bba4e3476"},
     {file = "eflips_schedule_rust-2.0.3-cp310-cp310-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:0af64fb4de38a585e8261761f9598c615aa6afce5291fff187372c3b7dde4dce"},
@@ -892,7 +838,6 @@ files = [
     {file = "flask-3.0.3-py3-none-any.whl", hash = "sha256:34e815dfaa43340d1d15a5c3a02b8476004037eb4840b34910c6e21679d288f3"},
     {file = "flask-3.0.3.tar.gz", hash = "sha256:ceb27b0af3823ea2737928a4d99d125a06175b8512c445cbd9a9ce200ef76842"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.dependencies]
 blinker = ">=1.6.2"
@@ -1007,7 +952,7 @@ version = "0.14.7"
 description = "Using SQLAlchemy with Spatial Databases"
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev"]
+groups = ["dev"]
 files = [
     {file = "GeoAlchemy2-0.14.7-py3-none-any.whl", hash = "sha256:af592892c58da0b98aa284d400f207f08a643aeee4523f025cef74991f76af14"},
     {file = "GeoAlchemy2-0.14.7.tar.gz", hash = "sha256:9ff731c4e5b955525cb128ee7173222365e7f084d4b99f6f68e491bac6b44d21"},
@@ -1026,7 +971,7 @@ version = "3.1.1"
 description = "Lightweight in-process concurrent programming"
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev"]
+groups = ["dev"]
 markers = "(platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\") and python_version <= \"3.12\""
 files = [
     {file = "greenlet-3.1.1-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:0bbae94a29c9e5c7e4a2b7f0aae5c17e8e90acbfd3bf6270eeba60c39fce3563"},
@@ -1115,7 +1060,6 @@ description = "Python interface to Gurobi"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "gurobipy-12.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:5c9e7757ea214a79a6cfc5ed08ee761b560fa7cf382f458fc2b72deb3c44c800"},
     {file = "gurobipy-12.0.2-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:dad2b899942c245422f269f14a23d6670879711ac17f7dcba14890148cab6903"},
@@ -1195,7 +1139,6 @@ files = [
     {file = "importlib_metadata-8.5.0-py3-none-any.whl", hash = "sha256:45e54197d28b7a7f1559e60b95e7c567032b602131fbd588f1497f47880aa68b"},
     {file = "importlib_metadata-8.5.0.tar.gz", hash = "sha256:71522656f0abace1d072b9e5481a48f07c138e00f079c38c8f883823f9c26bd7"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.dependencies]
 zipp = ">=3.20"
@@ -1232,7 +1175,6 @@ files = [
     {file = "itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef"},
     {file = "itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [[package]]
 name = "jinja2"
@@ -1259,7 +1201,6 @@ description = "Static image export for web-based visualization libraries with ze
 optional = false
 python-versions = "*"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "kaleido-0.2.1-py2.py3-none-macosx_10_11_x86_64.whl", hash = "sha256:ca6f73e7ff00aaebf2843f73f1d3bacde1930ef5041093fe76b83a15785049a7"},
     {file = "kaleido-0.2.1-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:bb9a5d1f710357d5d432ee240ef6658a6d124c3e610935817b4b42da9c787c05"},
@@ -1399,7 +1340,7 @@ version = "1.3.8"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev"]
+groups = ["dev"]
 files = [
     {file = "Mako-1.3.8-py3-none-any.whl", hash = "sha256:42f48953c7eb91332040ff567eb7eea69b22e7a4affbc5ba8e845e8f730f6627"},
     {file = "mako-1.3.8.tar.gz", hash = "sha256:577b97e414580d3e088d47c2dbbe9594aa7a5146ed2875d4dfa9075af2dd3cc8"},
@@ -1626,7 +1567,6 @@ files = [
     {file = "nest_asyncio-1.6.0-py3-none-any.whl", hash = "sha256:87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c"},
     {file = "nest_asyncio-1.6.0.tar.gz", hash = "sha256:6f172d5449aca15afd6c646851f4e31e02c598d553a667e38cafa997cfec55fe"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [[package]]
 name = "networkx"
@@ -1656,7 +1596,7 @@ description = "Python package for creating and manipulating graphs and networks"
 optional = false
 python-versions = ">=3.11"
 groups = ["dev"]
-markers = "python_version == \"3.11\""
+markers = "python_version >= \"3.11\""
 files = [
     {file = "networkx-3.5-py3-none-any.whl", hash = "sha256:0030d386a9a06dee3565298b4a734b68589749a544acbb6c412dc9e2489ec6ec"},
     {file = "networkx-3.5.tar.gz", hash = "sha256:d4c6f9cf81f52d69230866796b82afbccdec3db7ae4fbd1b65ea750feed50037"},
@@ -1770,7 +1710,6 @@ description = "Python client for requests to openrouteservice API services"
 optional = false
 python-versions = "*"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "openrouteservice-2.3.3-py3-none-any.whl", hash = "sha256:a84fe298b1de7a4fb1d8aa19798687f4f66fe212e5206667c703ca2c7e5de0ce"},
     {file = "openrouteservice-2.3.3.tar.gz", hash = "sha256:3696e0428533cf6bbcb9586c3bcfca7b5e7aaa269650ff16a862a7f61b857f4a"},
@@ -2027,7 +1966,6 @@ files = [
     {file = "plotly-5.24.1-py3-none-any.whl", hash = "sha256:f67073a1e637eb0dc3e46324d9d51e2fe76e9727c892dde64ddf1e1b51f29089"},
     {file = "plotly-5.24.1.tar.gz", hash = "sha256:dbc8ac8339d248a4bcc36e08a5659bacfe1b079390b8953533f4eb22169b4bae"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.dependencies]
 packaging = "*"
@@ -2056,7 +1994,6 @@ description = "Python Lex & Yacc"
 optional = false
 python-versions = "*"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce"},
     {file = "ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3"},
@@ -2087,7 +2024,7 @@ version = "2.9.10"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev"]
+groups = ["dev"]
 files = [
     {file = "psycopg2-binary-2.9.10.tar.gz", hash = "sha256:4b3df0e6990aa98acda57d983942eff13d824135fe2250e6522edaa782a06de2"},
     {file = "psycopg2_binary-2.9.10-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:0ea8e3d0ae83564f2fc554955d327fa081d065c8ca5cc6d2abb643e2c9c1200f"},
@@ -2181,7 +2118,6 @@ description = "Pyomo: Python Optimization Modeling Objects"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "pyomo-6.9.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:2574b833784551bb2ee45b3f371d7cf5589f5b2a4864920780c1ba33293bd4df"},
     {file = "pyomo-6.9.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:64e491759e370272597b57fe33b20cafb47452019ab60811082ee5691dd61857"},
@@ -2240,8 +2176,7 @@ version = "3.7.1"
 description = "Python interface to PROJ (cartographic projections and coordinate transformations library)"
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "dev"]
-markers = "python_version < \"3.12\""
+groups = ["dev"]
 files = [
     {file = "pyproj-3.7.1-cp310-cp310-macosx_13_0_x86_64.whl", hash = "sha256:bf09dbeb333c34e9c546364e7df1ff40474f9fddf9e70657ecb0e4f670ff0b0e"},
     {file = "pyproj-3.7.1-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:6575b2e53cc9e3e461ad6f0692a5564b96e7782c28631c7771c668770915e169"},
@@ -2442,7 +2377,6 @@ files = [
     {file = "retrying-1.3.4-py3-none-any.whl", hash = "sha256:8cc4d43cb8e1125e0ff3344e9de678fefd85db3b750b81b2240dc0183af37b35"},
     {file = "retrying-1.3.4.tar.gz", hash = "sha256:345da8c5765bd982b1d1915deb9102fd3d1f7ad16bd84a9700b85f64d24e8f3e"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.dependencies]
 six = ">=1.7.0"
@@ -2531,7 +2465,6 @@ files = [
     {file = "setuptools-75.6.0-py3-none-any.whl", hash = "sha256:ce74b49e8f7110f9bf04883b730f4765b774ef3ef28f722cce7c273d253aaf7d"},
     {file = "setuptools-75.6.0.tar.gz", hash = "sha256:8199222558df7c86216af4f84c30e9b34a61d8ba19366cc914424cdbd28252f6"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.extras]
 check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\"", "ruff (>=0.7.0) ; sys_platform != \"cygwin\""]
@@ -2544,72 +2477,11 @@ type = ["importlib_metadata (>=7.0.2) ; python_version < \"3.10\"", "jaraco.deve
 
 [[package]]
 name = "shapely"
-version = "2.0.6"
-description = "Manipulation and analysis of geometric objects"
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-markers = "python_version >= \"3.12\""
-files = [
-    {file = "shapely-2.0.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:29a34e068da2d321e926b5073539fd2a1d4429a2c656bd63f0bd4c8f5b236d0b"},
-    {file = "shapely-2.0.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:e1c84c3f53144febf6af909d6b581bc05e8785d57e27f35ebaa5c1ab9baba13b"},
-    {file = "shapely-2.0.6-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2ad2fae12dca8d2b727fa12b007e46fbc522148a584f5d6546c539f3464dccde"},
-    {file = "shapely-2.0.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b3304883bd82d44be1b27a9d17f1167fda8c7f5a02a897958d86c59ec69b705e"},
-    {file = "shapely-2.0.6-cp310-cp310-win32.whl", hash = "sha256:3ec3a0eab496b5e04633a39fa3d5eb5454628228201fb24903d38174ee34565e"},
-    {file = "shapely-2.0.6-cp310-cp310-win_amd64.whl", hash = "sha256:28f87cdf5308a514763a5c38de295544cb27429cfa655d50ed8431a4796090c4"},
-    {file = "shapely-2.0.6-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:5aeb0f51a9db176da9a30cb2f4329b6fbd1e26d359012bb0ac3d3c7781667a9e"},
-    {file = "shapely-2.0.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9a7a78b0d51257a367ee115f4d41ca4d46edbd0dd280f697a8092dd3989867b2"},
-    {file = "shapely-2.0.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f32c23d2f43d54029f986479f7c1f6e09c6b3a19353a3833c2ffb226fb63a855"},
-    {file = "shapely-2.0.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b3dc9fb0eb56498912025f5eb352b5126f04801ed0e8bdbd867d21bdbfd7cbd0"},
-    {file = "shapely-2.0.6-cp311-cp311-win32.whl", hash = "sha256:d93b7e0e71c9f095e09454bf18dad5ea716fb6ced5df3cb044564a00723f339d"},
-    {file = "shapely-2.0.6-cp311-cp311-win_amd64.whl", hash = "sha256:c02eb6bf4cfb9fe6568502e85bb2647921ee49171bcd2d4116c7b3109724ef9b"},
-    {file = "shapely-2.0.6-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:cec9193519940e9d1b86a3b4f5af9eb6910197d24af02f247afbfb47bcb3fab0"},
-    {file = "shapely-2.0.6-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:83b94a44ab04a90e88be69e7ddcc6f332da7c0a0ebb1156e1c4f568bbec983c3"},
-    {file = "shapely-2.0.6-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:537c4b2716d22c92036d00b34aac9d3775e3691f80c7aa517c2c290351f42cd8"},
-    {file = "shapely-2.0.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:98fea108334be345c283ce74bf064fa00cfdd718048a8af7343c59eb40f59726"},
-    {file = "shapely-2.0.6-cp312-cp312-win32.whl", hash = "sha256:42fd4cd4834747e4990227e4cbafb02242c0cffe9ce7ef9971f53ac52d80d55f"},
-    {file = "shapely-2.0.6-cp312-cp312-win_amd64.whl", hash = "sha256:665990c84aece05efb68a21b3523a6b2057e84a1afbef426ad287f0796ef8a48"},
-    {file = "shapely-2.0.6-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:42805ef90783ce689a4dde2b6b2f261e2c52609226a0438d882e3ced40bb3013"},
-    {file = "shapely-2.0.6-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:6d2cb146191a47bd0cee8ff5f90b47547b82b6345c0d02dd8b25b88b68af62d7"},
-    {file = "shapely-2.0.6-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e3fdef0a1794a8fe70dc1f514440aa34426cc0ae98d9a1027fb299d45741c381"},
-    {file = "shapely-2.0.6-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2c665a0301c645615a107ff7f52adafa2153beab51daf34587170d85e8ba6805"},
-    {file = "shapely-2.0.6-cp313-cp313-win32.whl", hash = "sha256:0334bd51828f68cd54b87d80b3e7cee93f249d82ae55a0faf3ea21c9be7b323a"},
-    {file = "shapely-2.0.6-cp313-cp313-win_amd64.whl", hash = "sha256:d37d070da9e0e0f0a530a621e17c0b8c3c9d04105655132a87cfff8bd77cc4c2"},
-    {file = "shapely-2.0.6-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:fa7468e4f5b92049c0f36d63c3e309f85f2775752e076378e36c6387245c5462"},
-    {file = "shapely-2.0.6-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ed5867e598a9e8ac3291da6cc9baa62ca25706eea186117034e8ec0ea4355653"},
-    {file = "shapely-2.0.6-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:81d9dfe155f371f78c8d895a7b7f323bb241fb148d848a2bf2244f79213123fe"},
-    {file = "shapely-2.0.6-cp37-cp37m-win32.whl", hash = "sha256:fbb7bf02a7542dba55129062570211cfb0defa05386409b3e306c39612e7fbcc"},
-    {file = "shapely-2.0.6-cp37-cp37m-win_amd64.whl", hash = "sha256:837d395fac58aa01aa544495b97940995211e3e25f9aaf87bc3ba5b3a8cd1ac7"},
-    {file = "shapely-2.0.6-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:c6d88ade96bf02f6bfd667ddd3626913098e243e419a0325ebef2bbd481d1eb6"},
-    {file = "shapely-2.0.6-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:8b3b818c4407eaa0b4cb376fd2305e20ff6df757bf1356651589eadc14aab41b"},
-    {file = "shapely-2.0.6-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1bbc783529a21f2bd50c79cef90761f72d41c45622b3e57acf78d984c50a5d13"},
-    {file = "shapely-2.0.6-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2423f6c0903ebe5df6d32e0066b3d94029aab18425ad4b07bf98c3972a6e25a1"},
-    {file = "shapely-2.0.6-cp38-cp38-win32.whl", hash = "sha256:2de00c3bfa80d6750832bde1d9487e302a6dd21d90cb2f210515cefdb616e5f5"},
-    {file = "shapely-2.0.6-cp38-cp38-win_amd64.whl", hash = "sha256:3a82d58a1134d5e975f19268710e53bddd9c473743356c90d97ce04b73e101ee"},
-    {file = "shapely-2.0.6-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:392f66f458a0a2c706254f473290418236e52aa4c9b476a072539d63a2460595"},
-    {file = "shapely-2.0.6-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:eba5bae271d523c938274c61658ebc34de6c4b33fdf43ef7e938b5776388c1be"},
-    {file = "shapely-2.0.6-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7060566bc4888b0c8ed14b5d57df8a0ead5c28f9b69fb6bed4476df31c51b0af"},
-    {file = "shapely-2.0.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b02154b3e9d076a29a8513dffcb80f047a5ea63c897c0cd3d3679f29363cf7e5"},
-    {file = "shapely-2.0.6-cp39-cp39-win32.whl", hash = "sha256:44246d30124a4f1a638a7d5419149959532b99dfa25b54393512e6acc9c211ac"},
-    {file = "shapely-2.0.6-cp39-cp39-win_amd64.whl", hash = "sha256:2b542d7f1dbb89192d3512c52b679c822ba916f93479fa5d4fc2fe4fa0b3c9e8"},
-    {file = "shapely-2.0.6.tar.gz", hash = "sha256:997f6159b1484059ec239cacaa53467fd8b5564dabe186cd84ac2944663b0bf6"},
-]
-
-[package.dependencies]
-numpy = ">=1.14,<3"
-
-[package.extras]
-docs = ["matplotlib", "numpydoc (==1.1.*)", "sphinx", "sphinx-book-theme", "sphinx-remove-toctrees"]
-test = ["pytest", "pytest-cov"]
-
-[[package]]
-name = "shapely"
 version = "2.1.1"
 description = "Manipulation and analysis of geometric objects"
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev"]
-markers = "python_version < \"3.12\""
 files = [
     {file = "shapely-2.1.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d8ccc872a632acb7bdcb69e5e78df27213f7efd195882668ffba5405497337c6"},
     {file = "shapely-2.1.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f24f2ecda1e6c091da64bcbef8dd121380948074875bd1b247b3d17e99407099"},
@@ -2875,7 +2747,7 @@ version = "2.0.36"
 description = "Database Abstraction Library"
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev"]
+groups = ["dev"]
 files = [
     {file = "SQLAlchemy-2.0.36-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:59b8f3adb3971929a3e660337f5dacc5942c2cdb760afcabb2614ffbda9f9f72"},
     {file = "SQLAlchemy-2.0.36-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:37350015056a553e442ff672c2d20e6f4b6d0b2495691fa239d8aa18bb3bc908"},
@@ -2976,7 +2848,6 @@ files = [
     {file = "tenacity-9.0.0-py3-none-any.whl", hash = "sha256:93de0c98785b27fcf659856aa9f54bfbd399e29969b0621bc7f762bd441b4539"},
     {file = "tenacity-9.0.0.tar.gz", hash = "sha256:807f37ca97d62aa361264d497b0e31e92b8027044942bfa756160d908320d73b"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.extras]
 doc = ["reno", "sphinx"]
@@ -3133,7 +3004,6 @@ files = [
     {file = "werkzeug-3.0.6-py3-none-any.whl", hash = "sha256:1bc0c2310d2fbb07b1dd1105eba2f7af72f322e1e455f2f93c993bee8c8a5f17"},
     {file = "werkzeug-3.0.6.tar.gz", hash = "sha256:a8dd59d4de28ca70471a34cba79bed5f7ef2e036a76b3ab0835474246eb41f8d"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.dependencies]
 MarkupSafe = ">=2.1.1"
@@ -3188,7 +3058,6 @@ files = [
     {file = "zipp-3.21.0-py3-none-any.whl", hash = "sha256:ac1bbe05fd2991f160ebce24ffbac5f6d11d83dc90891255885223d42b3cd931"},
     {file = "zipp-3.21.0.tar.gz", hash = "sha256:2c9958f6430a2040341a52eb608ed6dd93ef4392e02ffe219417c1b28b5dd1f4"},
 ]
-markers = {dev = "python_version < \"3.12\""}
 
 [package.extras]
 check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\""]
@@ -3200,5 +3069,5 @@ type = ["pytest-mypy"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10, <4.0"
-content-hash = "5a1e39ee0202a5372a621528816f5344952da48693d448447005505c2d81ebee"
+python-versions = ">=3.10, <3.14"
+content-hash = "cf7048d003e0ea46f71c1ea4413e0293762bf1e485d6862ea78039c4597f7a98"
