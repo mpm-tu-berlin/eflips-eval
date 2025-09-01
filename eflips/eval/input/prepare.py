@@ -1,11 +1,11 @@
-from collections import Counter
-from datetime import datetime
-from typing import Dict, List
-
 import pandas as pd
 import sqlalchemy
+from collections import Counter
+from datetime import datetime
 from eflips.model import Rotation, Trip, Route
+from geoalchemy2.shape import to_shape
 from shapely import wkb  # type: ignore
+from typing import Dict, List
 
 
 def rotation_info(
@@ -161,17 +161,17 @@ def geographic_trip_plot(
                 line_coords = [(point.y, point.x) for point in line_geom.coords]
             else:
                 line_coords = []
-                point_geom = wkb.loads(bytes(trip.route.departure_station.geom.data))
+                point_geom = to_shape(trip.route.departure_station.geom)
                 lon, lat = point_geom.x, point_geom.y
                 line_coords.append((lat, lon))
                 for assoc in trip.route.assoc_route_stations:
                     if assoc.location is not None:
-                        station_coordinates = wkb.loads(bytes(assoc.location.data))
+                        station_coordinates = to_shape(assoc.location)
                     else:
-                        station_coordinates = wkb.loads(bytes(assoc.station.geom.data))
+                        station_coordinates = to_shape(assoc.station.geom)
                     lon, lat = station_coordinates.x, station_coordinates.y
                     line_coords.append((lat, lon))
-                point_geom = wkb.loads(bytes(trip.route.arrival_station.geom.data))
+                point_geom = to_shape(trip.route.arrival_station.geom)
                 lon, lat = point_geom.x, point_geom.y
                 line_coords.append((lat, lon))
 
