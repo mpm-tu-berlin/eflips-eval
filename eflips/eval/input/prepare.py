@@ -1,11 +1,13 @@
-import pandas as pd
-import sqlalchemy
 from collections import Counter
 from datetime import datetime
+from typing import Dict, List, Tuple
+
+import pandas as pd
+import sqlalchemy
 from eflips.model import Rotation, Trip, Route
 from geoalchemy2.shape import to_shape
 from shapely import wkb  # type: ignore
-from typing import Dict, List
+from shapely.geometry.linestring import LineString  # type: ignore
 
 
 def rotation_info(
@@ -115,7 +117,7 @@ def geographic_trip_plot(
     - originating_depot_id: the id of the originating depot
     - originating_depot_name: the name of the originating depot
     - distance: the distance of the route
-    - coordinates: An array of *(lon, lat)* tuples with the coordinates of the route - the shape if set, otherwise the stops
+    - coordinates: An array of (lat, lon) tuples with the coordinates of the route - the shape if set, otherwise the stops
     - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
 
     :param scenario_id:
@@ -142,7 +144,9 @@ def geographic_trip_plot(
         .joinedload(Route.departure_station),
     )
 
-    result: List[Dict[str, int | float | str | datetime]] = []
+    result: List[
+        Dict[str, int | float | str | datetime | List[Tuple[float, float]]]
+    ] = []
     for rotation in rotations_q:
         origin_depot_id = rotation.trips[0].route.departure_station_id
         origin_depot_name = rotation.trips[0].route.departure_station.name
@@ -153,12 +157,10 @@ def geographic_trip_plot(
         for trip in rotation.trips:
             # Obtain the coordinates of the route
             if trip.route.geom is not None:
-                raise NotImplementedError(
-                    "Geometries are not yet supported. Check if the code below 'just works'."
-                    "If not, you need to implement the conversion to coordinates."
-                )
-                line_geom = wkb.loads(bytes(trip.route.geom.data))
-                line_coords = [(point.y, point.x) for point in line_geom.coords]
+                line_geom: LineString = to_shape(trip.route.geom)  # type: ignore
+                line_coords = [
+                    (float(point[1]), float(point[0])) for point in line_geom.coords
+                ]
             else:
                 line_coords = []
                 point_geom = to_shape(trip.route.departure_station.geom)
