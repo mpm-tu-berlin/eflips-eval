@@ -80,7 +80,11 @@ def rotation_info(
         result.append(
             {
                 "rotation_id": rotation.id,
-                "rotation_name": rotation.name,
+                "rotation_name": (
+                    rotation.name
+                    if rotation.name is not None
+                    else f"Unnamed Rotation ({rotation.id})"
+                ),
                 "vehicle_type_id": rotation.vehicle_type_id,
                 "vehicle_type_name": rotation.vehicle_type.name,
                 "total_distance": distance,
