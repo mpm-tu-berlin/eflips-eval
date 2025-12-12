@@ -22,6 +22,7 @@ def generate_depot_colors(depot_ids: List[int]) -> Dict[int, Dict[str, str]]:
     Special case: If only one depot exists, returns black for all.
 
     :param depot_ids: List of depot IDs to generate colors for
+
     :return: Dictionary mapping depot_id to dict with 'icon_color' and 'hex_color'
     """
     # Folium Icon compatible colors with their hex equivalents
@@ -113,6 +114,7 @@ def calculate_map_center(stations: List[Station]) -> Tuple[float, float]:
     Calculate the mean latitude and longitude for map centering.
 
     :param stations: List of Station objects with geometry
+
     :return: Tuple of (latitude, longitude)
     """
     if not stations:
@@ -139,12 +141,15 @@ def get_vehicle_counts_by_depot(
     Query pattern:
     1. Get all Rotations for scenario with vehicle and vehicle_type loaded
     2. For each rotation:
-       - Get depot via first trip's departure station (matches Depot.station_id)
-       - Track vehicle_id and vehicle_type_name
+
+        - Get depot via first trip's departure station (matches Depot.station_id)
+        - Track vehicle_id and vehicle_type_name
+
     3. Group by depot_id -> vehicle_type_name -> count unique vehicle_ids
 
     :param scenario_id: The scenario ID
     :param session: SQLAlchemy session
+
     :return: Dictionary {depot_id: {vehicle_type_name: vehicle_count}}
     """
     from eflips.model import Vehicle
@@ -210,6 +215,7 @@ def get_routes_with_events(scenario_id: int, session: Session) -> List[Route]:
     This is important: only routes with actual simulation events should be displayed.
 
     Query pattern:
+
     1. Query distinct Route IDs from Events via Trip
     2. Load routes with geometry and stations
 

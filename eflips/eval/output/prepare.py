@@ -574,21 +574,25 @@ def interactive_map_data(
     :param session: SQLAlchemy session
     :return: Dictionary with all map data organized by scenario
 
-    The returned dictionary has the following structure:
-    {
-        "scenarios": {
-            scenario_id: {
-                "name": scenario name,
-                "name_short": short name,
-                "depots": [...],
-                "routes": [...],
-                "termini_electrified": [...],
-                "termini_unelectrified": [...]
-            }
-        },
-        "map_center": {"latitude": float, "longitude": float},
-        "global_color_map": {depot_id: hex_color}
-    }
+    The returned dictionary has the following structure: ::
+
+
+        {
+            "scenarios": {
+                scenario_id: {
+                    "name": scenario name,
+                    "name_short": short name,
+                    "depots": [...],
+                    "routes": [...],
+                    "termini_electrified": [...],
+                    "termini_unelectrified": [...]
+                }
+            },
+            "map_center": {"latitude": float, "longitude": float},
+            "global_color_map": {depot_id: hex_color}
+        }
+
+
     """
     from eflips.model import Scenario, Station
     from eflips.eval.output.map_util import (
