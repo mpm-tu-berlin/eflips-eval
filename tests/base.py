@@ -23,6 +23,8 @@ from eflips.model import (
     Process,
     AssocPlanProcess,
     Event,
+    ChargeType,
+    VoltageLevel,
 )
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -128,11 +130,12 @@ class BaseTest:
 
         # -----------------------------------------
         # Anlegen von Stopps entlang der Linie Oberstadt
+        # Using realistic coordinates around Berlin (lon, lat, elevation in EPSG:4326)
         stop_1 = Station(
             scenario=scenario,
             name="Industriepark",
             name_short="OS1",
-            geom="POINT(0 0 0)",
+            geom="POINT(13.514954 52.625008 0)",
             is_electrified=False,
         )
         session.add(stop_1)
@@ -141,44 +144,54 @@ class BaseTest:
             scenario=scenario,
             name="Duckstraße",
             name_short="OS2",
-            geom="POINT(1 0 0)",
+            geom="POINT(13.414954 52.525008 0)",
             is_electrified=False,
         )
         stop_3 = Station(
             scenario=scenario,
             name="Alte Kirche",
             name_short="OS3",
-            geom="POINT(2 0 0)",
-            is_electrified=False,
+            geom="POINT(13.514954 52.525008 0)",
+            is_electrified=True,
+            charge_type=ChargeType.OPPORTUNITY,
+            amount_charging_places=2,
+            power_per_charger=150.0,
+            power_total=300.0,
+            voltage_level=VoltageLevel.MV,
         )
 
         stop_4 = Station(
             scenario=scenario,
             name="Düsentrieb Werkstatt",
             name_short="US1",
-            geom="POINT(0 1 0)",
+            geom="POINT(13.394954 52.515008 0)",
             is_electrified=False,
         )
         stop_5 = Station(
             scenario=scenario,
             name="Geldspeicher",
             name_short="US2",
-            geom="POINT(0 4 0)",
-            is_electrified=False,
+            geom="POINT(13.384954 52.510008 0)",
+            is_electrified=True,
+            charge_type=ChargeType.OPPORTUNITY,
+            amount_charging_places=2,
+            power_per_charger=150.0,
+            power_total=300.0,
+            voltage_level=VoltageLevel.MV,
         )
 
         stop_6 = Station(
             scenario=scenario,
             name="Milliardärsclub",
             name_short="HV1",
-            geom="POINT(0 0 0)",
+            geom="POINT(13.400954 52.525008 0)",
             is_electrified=False,
         )
         stop_7 = Station(
             scenario=scenario,
             name="Emil-Erpel-Statue",
             name_short="HV2",
-            geom="POINT(0 0 2)",
+            geom="POINT(13.410954 52.520008 0)",
             is_electrified=False,
         )
         stop_8 = Station(

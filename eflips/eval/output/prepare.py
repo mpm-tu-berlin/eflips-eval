@@ -1,6 +1,6 @@
 import zoneinfo
 from datetime import datetime, timedelta
-from typing import Dict, List, Iterable, Tuple, Optional
+from typing import Any, Dict, List, Iterable, Tuple, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -558,3 +558,201 @@ def depot_activity(
                 )
 
     return area_occupancy
+
+
+def interactive_map_data(
+    scenario_ids: int | List[int],
+    session: Session,
+) -> Dict[str, Any]:
+    """
+    Prepare all data needed for the interactive map visualization.
+
+    This function extracts and organizes data for creating an interactive folium map
+    showing depots, routes, charging stations, and termini. Supports multiple scenarios.
+
+    :param scenario_ids: Single scenario ID or list of scenario IDs for multi-scenario view
+    :param session: SQLAlchemy session
+    :return: Dictionary with all map data organized by scenario
+
+    The returned dictionary has the following structure:
+    {
+        "scenarios": {
+            scenario_id: {
+                "name": scenario name,
+                "name_short": short name,
+                "depots": [...],
+                "routes": [...],
+                "termini_electrified": [...],
+                "termini_unelectrified": [...]
+            }
+        },
+        "map_center": {"latitude": float, "longitude": float},
+        "global_color_map": {depot_id: hex_color}
+    }
+    """
+    from eflips.model import Scenario, Station
+    from eflips.eval.output.map_util import (
+        calculate_map_center,
+        extract_coordinates_from_geometry,
+        generate_depot_colors,
+        get_routes_with_events,
+        get_vehicle_counts_by_depot,
+    )
+    import geoalchemy2.shape
+
+    # Normalize scenario_ids to list
+    if isinstance(scenario_ids, int):
+        scenario_ids = [scenario_ids]
+
+    # Collect all depots across all scenarios for global color mapping
+    all_depot_ids = []
+    for scenario_id in scenario_ids:
+        depots = session.query(Depot).filter(Depot.scenario_id == scenario_id).all()
+        all_depot_ids.extend([d.id for d in depots])
+
+    # Generate global color map (consistent across all scenarios)
+    global_color_map = generate_depot_colors(all_depot_ids)
+
+    # Collect all stations for calculating map center
+    all_stations = []
+
+    # Prepare data for each scenario
+    scenarios_data = {}
+
+    for scenario_id in scenario_ids:
+        # Get scenario info
+        scenario = session.query(Scenario).filter(Scenario.id == scenario_id).one()
+
+        # Get vehicle counts by depot
+        vehicle_counts_by_depot = get_vehicle_counts_by_depot(scenario_id, session)
+
+        # Get depots
+        depots = session.query(Depot).filter(Depot.scenario_id == scenario_id).all()
+        depot_data = []
+
+        for depot in depots:
+            # Extract coordinates from depot station
+            point = geoalchemy2.shape.to_shape(depot.station.geom)  # type: ignore[arg-type]
+            color_info = global_color_map[depot.id]
+            depot_data.append(
+                {
+                    "id": depot.id,
+                    "name": depot.name,
+                    "latitude": point.y,
+                    "longitude": point.x,
+                    "vehicle_counts": vehicle_counts_by_depot.get(depot.id, {}),
+                    "icon_color": color_info["icon_color"],
+                    "hex_color": color_info["hex_color"],
+                }
+            )
+
+        # Get routes with events and extract route-to-depot mapping
+        routes_with_events = get_routes_with_events(scenario_id, session)
+
+        # Map routes to depots based on rotations
+        # Get rotations to determine which depot each route belongs to
+        rotations = (
+            session.query(Rotation)
+            .filter(Rotation.scenario_id == scenario_id)
+            .filter(Rotation.trips.any())
+            .options(sqlalchemy.orm.joinedload(Rotation.trips).joinedload(Trip.route))
+            .all()
+        )
+
+        # Build mapping: route_id -> depot_id
+        route_to_depot: Dict[int, int] = {}
+        station_to_depot = {depot.station_id: depot.id for depot in depots}
+
+        for rotation in rotations:
+            if not rotation.trips:
+                continue
+
+            first_trip = sorted(rotation.trips, key=lambda t: t.departure_time)[0]
+            departure_station_id = first_trip.route.departure_station_id
+
+            if departure_station_id in station_to_depot:
+                depot_id = station_to_depot[departure_station_id]
+                # Map all routes in this rotation to the depot
+                for trip in rotation.trips:
+                    route_to_depot[trip.route_id] = depot_id
+
+        # Extract route data
+        routes_data = []
+        for route in routes_with_events:
+            # Get depot assignment
+            if route.id not in route_to_depot.keys():
+                raise ValueError(
+                    f"Route ID {route.id} has events but no depot assignment in scenario {scenario_id}."
+                )
+            depot_id = route_to_depot[route.id]
+            if depot_id is None:
+                continue  # Skip routes without depot assignment
+
+            # Extract coordinates
+            coordinates = extract_coordinates_from_geometry(route.geom, route)  # type: ignore[arg-type]
+
+            routes_data.append(
+                {
+                    "coordinates": coordinates,
+                    "depot_id": depot_id,
+                    "route_name": route.name,
+                    "line_name": route.line.name if route.line else "",
+                }
+            )
+
+        # Get termini (departure and arrival stations from routes with events)
+        terminus_station_ids = set()
+        for route in routes_with_events:
+            terminus_station_ids.add(route.departure_station_id)
+            terminus_station_ids.add(route.arrival_station_id)
+
+        if terminus_station_ids:
+            termini = (
+                session.query(Station)
+                .filter(Station.id.in_(terminus_station_ids))
+                .all()
+            )
+        else:
+            termini = []
+
+        # Separate by electrification status
+        termini_electrified = []
+        termini_unelectrified = []
+
+        for station in termini:
+            point = geoalchemy2.shape.to_shape(station.geom)  # type: ignore[arg-type]
+            station_data = {
+                "id": station.id,
+                "name": station.name,
+                "latitude": point.y,
+                "longitude": point.x,
+            }
+
+            if station.is_electrified:
+                termini_electrified.append(station_data)
+            else:
+                termini_unelectrified.append(station_data)
+
+            all_stations.append(station)
+
+        # Store scenario data
+        scenarios_data[scenario_id] = {
+            "name": scenario.name,
+            "name_short": scenario.name_short or scenario.name,
+            "depots": depot_data,
+            "routes": routes_data,
+            "termini_electrified": termini_electrified,
+            "termini_unelectrified": termini_unelectrified,
+        }
+
+    # Calculate global map center
+    map_center_coords = calculate_map_center(all_stations)
+
+    return {
+        "scenarios": scenarios_data,
+        "map_center": {
+            "latitude": map_center_coords[0],
+            "longitude": map_center_coords[1],
+        },
+        "global_color_map": global_color_map,
+    }

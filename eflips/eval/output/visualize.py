@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 from zoneinfo import ZoneInfo
 
+import folium  # type: ignore [import-untyped]
 import matplotlib.animation as animation
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -464,3 +465,277 @@ def depot_activity_animation(
     )
 
     return ani
+
+
+def _build_depot_popup_html(
+    depot_name: str, vehicle_counts: Dict[str, int], depot_plot_path: str | None
+) -> str:
+    """
+    Build HTML for depot popup with vehicle counts and optional link.
+
+    :param depot_name: Name of the depot
+    :param vehicle_counts: Dictionary mapping vehicle type names to counts
+    :param depot_plot_path: Optional path to depot detail plot
+    :return: HTML string for popup
+    """
+    html_parts = [f"<h3>{depot_name}</h3>"]
+
+    if vehicle_counts:
+        html_parts.append("<table style='margin-top: 10px;'>")
+        html_parts.append(
+            "<tr><th style='text-align: left; padding-right: 10px;'>Vehicle Type</th>"
+            "<th style='text-align: left;'>Count</th></tr>"
+        )
+        for vtype, count in sorted(vehicle_counts.items()):
+            html_parts.append(
+                f"<tr><td style='padding-right: 10px;'>{vtype}</td>"
+                f"<td>{count}</td></tr>"
+            )
+        html_parts.append("</table>")
+    else:
+        html_parts.append("<p>No vehicles assigned</p>")
+
+    if depot_plot_path:
+        html_parts.append(
+            f"<p style='margin-top: 10px;'>"
+            f"<a href='{depot_plot_path}' target='_blank'>View Details</a>"
+            f"</p>"
+        )
+
+    return "".join(html_parts)
+
+
+def _build_station_popup_html(station_name: str, station_plot_path: str | None) -> str:
+    """
+    Build HTML for station popup with optional link.
+
+    :param station_name: Name of the station
+    :param station_plot_path: Optional path to station detail plot
+    :return: HTML string for popup
+    """
+    html_parts = [f"<h3>{station_name}</h3>"]
+
+    if station_plot_path:
+        html_parts.append(
+            f"<p style='margin-top: 10px;'>"
+            f"<a href='{station_plot_path}' target='_blank'>View Details</a>"
+            f"</p>"
+        )
+
+    return "".join(html_parts)
+
+
+def _create_depot_marker(
+    depot_data: Dict[str, Any], depot_plot_dir: str | None
+) -> "folium.Marker":
+    """
+    Create a single depot marker with popup and tooltip.
+
+    Uses the icon_color from depot_data for folium Icon compatibility.
+
+    :param depot_data: Dictionary with depot information (including 'icon_color')
+    :param depot_plot_dir: Optional directory containing depot plots
+    :return: folium.Marker object
+    """
+
+    # Determine depot plot path
+    depot_plot_path = None
+    if depot_plot_dir:
+        depot_plot_path = f"{depot_plot_dir}/depot_{depot_data['id']}.html"
+
+    # Build popup HTML
+    popup_html = _build_depot_popup_html(
+        depot_data["name"], depot_data["vehicle_counts"], depot_plot_path
+    )
+
+    # Create marker with home icon in depot color (using folium-compatible color name)
+    marker = folium.Marker(
+        location=[depot_data["latitude"], depot_data["longitude"]],
+        popup=folium.Popup(popup_html, max_width=300),
+        tooltip=depot_data["name"],
+        icon=folium.Icon(color=depot_data["icon_color"], icon="home", prefix="fa"),
+    )
+
+    return marker
+
+
+def _create_station_marker(
+    station_data: Dict[Any, Any], station_plot_dir: str | None
+) -> "folium.Marker":
+    """
+    Create a single opportunity charging station marker.
+
+    Uses a numbered icon (black) to indicate the station.
+
+    :param station_data: Dictionary with station information
+    :param station_plot_dir: Optional directory containing station plots
+    :return: folium.Marker object
+    """
+
+    # Determine station plot path
+    station_plot_path = None
+    if station_plot_dir:
+        station_plot_path = f"{station_plot_dir}/station_{station_data['id']}.html"
+
+    # Build popup HTML
+    popup_html = _build_station_popup_html(station_data["name"], station_plot_path)
+
+    # Create marker with black icon
+    marker = folium.Marker(
+        location=[station_data["latitude"], station_data["longitude"]],
+        popup=folium.Popup(popup_html, max_width=300),
+        tooltip=station_data["name"],
+        icon=folium.Icon(color="black", icon="bolt", prefix="fa"),
+    )
+
+    return marker
+
+
+def _create_terminus_marker(terminus_data: dict) -> "folium.Marker":  # type: ignore
+    """
+    Create a single terminus marker (always black).
+
+    :param terminus_data: Dictionary with terminus information
+    :return: folium.Marker object
+    """
+
+    marker = folium.Marker(
+        location=[terminus_data["latitude"], terminus_data["longitude"]],
+        tooltip=terminus_data["name"],
+        icon=folium.Icon(color="black", icon="circle", prefix="fa"),
+    )
+
+    return marker
+
+
+def _create_route_polyline(route_data: Dict[Any, Any], color: str) -> "folium.PolyLine":
+    """
+    Create a single route polyline.
+
+    :param route_data: Dictionary with route information
+    :param color: Hex color string for the route
+    :return: folium.PolyLine object
+    """
+
+    polyline = folium.PolyLine(
+        route_data["coordinates"], color=color, weight=2.5, opacity=1
+    )
+
+    return polyline
+
+
+def interactive_map(
+    prepared_data: Dict[str, Any],
+    station_plot_dir: str | None = None,
+    depot_plot_dir: str | None = None,
+) -> "folium.Map":
+    """
+    Create an interactive folium map from prepared data.
+
+    This function creates a map with depots, routes, and termini.
+    Supports multiple scenarios with toggleable layers.
+
+    :param prepared_data: Output from interactive_map_data()
+    :param station_plot_dir: Optional path to directory containing station plots (named {station_id}.html)
+    :param depot_plot_dir: Optional path to directory containing depot plots (named {depot_id}.html)
+    :return: folium.Map object ready to be saved
+
+    Example usage:
+        >>> prepared = interactive_map_data([scenario_id], session)
+        >>> m = interactive_map(prepared, station_plot_dir="plots/stations", depot_plot_dir="plots/depots")
+        >>> m.save("map.html")∑
+    """
+
+    # Initialize map at center with no default tiles (we'll add them as toggleable layers)
+    center = prepared_data["map_center"]
+    m = folium.Map(
+        location=[center["latitude"], center["longitude"]],
+        zoom_start=11,
+        tiles=None,  # Don't add default tiles
+    )
+
+    # Add base map tiles as toggleable layers (radio buttons - one must be selected)
+    # Default OpenStreetMap
+    folium.TileLayer(
+        tiles="OpenStreetMap",
+        name="OpenStreetMap",
+        overlay=False,
+        control=True,
+        show=True,  # Default selected
+    ).add_to(m)
+
+    # CartoDB Positron (light theme)
+    folium.TileLayer(
+        tiles="CartoDB Positron",
+        name="CartoDB Positron",
+        overlay=False,
+        control=True,
+        show=False,  # Default unselected
+    ).add_to(m)
+
+    # CartoDB Dark Matter (dark theme)
+    folium.TileLayer(
+        tiles="CartoDB dark_matter",
+        name="CartoDB Dark Matter",
+        overlay=False,
+        control=True,
+        show=False,  # Default unselected
+    ).add_to(m)
+
+    # Get global color map
+    color_map = prepared_data["global_color_map"]
+
+    # Process each scenario
+    for scenario_id, scenario_data in prepared_data["scenarios"].items():
+        scenario_name = scenario_data["name_short"]
+
+        # Create feature groups with descriptive names (will be checkboxes)
+        # Include scenario name in the feature group name for clarity
+        fg_depots = folium.FeatureGroup(
+            name=f"Depots - {scenario_name}", show=True  # Show by default
+        )
+        fg_routes = folium.FeatureGroup(
+            name=f"Routes - {scenario_name}", show=True  # Show by default
+        )
+        fg_termini_elec = folium.FeatureGroup(
+            name=f"Electrified Termini - {scenario_name}", show=True  # Show by default
+        )
+        fg_termini_unelec = folium.FeatureGroup(
+            name=f"Unelectrified Termini - {scenario_name}",
+            show=True,  # Show by default
+        )
+
+        # Add routes (bottom layer of features)
+        for route_data in scenario_data["routes"]:
+            depot_id = route_data["depot_id"]
+            # Use hex_color for polylines
+            route_color = color_map.get(depot_id, {}).get("hex_color", "#000000")
+            polyline = _create_route_polyline(route_data, route_color)
+            fg_routes.add_child(polyline)
+
+        # Add unelectrified termini (simple markers)
+        for terminus_data in scenario_data["termini_unelectrified"]:
+            marker = _create_terminus_marker(terminus_data)
+            fg_termini_unelec.add_child(marker)
+
+        # Add electrified termini (clickable with popups like stations)
+        for terminus_data in scenario_data["termini_electrified"]:
+            marker = _create_station_marker(terminus_data, station_plot_dir)
+            fg_termini_elec.add_child(marker)
+
+        # Add depots (top layer)
+        for depot_data in scenario_data["depots"]:
+            marker = _create_depot_marker(depot_data, depot_plot_dir)
+            fg_depots.add_child(marker)
+
+        # Add all feature groups to map in z-order (bottom to top)
+        # Elements added later appear on top
+        fg_routes.add_to(m)
+        fg_termini_unelec.add_to(m)
+        fg_termini_elec.add_to(m)
+        fg_depots.add_to(m)
+
+    # Add layer control (checkboxes for overlays, radio for base maps)
+    folium.LayerControl(collapsed=False).add_to(m)
+
+    return m
