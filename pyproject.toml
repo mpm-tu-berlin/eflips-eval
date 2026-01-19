@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eflips-eval"
-version = "1.8.0"
+version = "1.9.0"
 description = ""
 authors = [
     "Ludger Heide <ludger.heide@lhtechnologies.de>",
@@ -20,11 +20,14 @@ shapely = "^2.0.5"
 folium = "^0.17.0"
 seaborn = "^0.13.2"
 matplotlib = "^3.9.0"
+httpx = "^0.27.0"
+polyline = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.7.1"
 black = "^24.2.0"
 pytest = "^7.4.3"
+pytest-asyncio = "^0.23.0"
 pytest-pycharm = "^0.7.0"
 pre-commit = "^3.5.0"
 sphinx-autoapi = "^3.0.0"
@@ -32,9 +35,7 @@ sphinx-paramlinks = "^0.6.0"
 pandas-stubs = "^2.2.0.240218"
 coverage = "^7.4.4"
 eflips-depot = "^4.11.0"
-
-[tool.mypy]
-plugins = "numpy.typing.mypy_plugin"
+typing-extensions = "^4.15.0"
 
 [build-system]
 requires = ["poetry-core"]
