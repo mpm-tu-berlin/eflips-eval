@@ -2,8 +2,8 @@ name: Lint
 on: pull_request
 
 env:
-  PYTHON_VERSION: "3.12"
-  POETRY_VERSION: "1.7.1"
+  PYTHON_VERSION: "3.13"
+  POETRY_VERSION: "2.1.2"
   POETRY_URL: https://install.python-poetry.org
 
 jobs:
