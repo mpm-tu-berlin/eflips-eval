@@ -26,7 +26,11 @@ from eflips.model import (
     ChargeType,
     VoltageLevel,
 )
-from sqlalchemy import create_engine
+
+
+from eflips.model import create_engine
+from geoalchemy2.shape import from_shape
+from shapely.geometry import Point
 from sqlalchemy.orm import Session
 
 
@@ -135,7 +139,7 @@ class BaseTest:
             scenario=scenario,
             name="Industriepark",
             name_short="OS1",
-            geom="POINT(13.514954 52.625008 0)",
+            geom=from_shape(Point(13.514954, 52.625008), srid=4326),
             is_electrified=False,
         )
         session.add(stop_1)
@@ -144,14 +148,14 @@ class BaseTest:
             scenario=scenario,
             name="Duckstraße",
             name_short="OS2",
-            geom="POINT(13.414954 52.525008 0)",
+            geom=from_shape(Point(13.414954, 52.525008), srid=4326),
             is_electrified=False,
         )
         stop_3 = Station(
             scenario=scenario,
             name="Alte Kirche",
             name_short="OS3",
-            geom="POINT(13.514954 52.525008 0)",
+            geom=from_shape(Point(13.514954, 52.525008), srid=4326),
             is_electrified=True,
             charge_type=ChargeType.OPPORTUNITY,
             amount_charging_places=2,
@@ -164,14 +168,14 @@ class BaseTest:
             scenario=scenario,
             name="Düsentrieb Werkstatt",
             name_short="US1",
-            geom="POINT(13.394954 52.515008 0)",
+            geom=from_shape(Point(13.394954, 52.515008), srid=4326),
             is_electrified=False,
         )
         stop_5 = Station(
             scenario=scenario,
             name="Geldspeicher",
             name_short="US2",
-            geom="POINT(13.384954 52.510008 0)",
+            geom=from_shape(Point(13.384954, 52.510008), srid=4326),
             is_electrified=True,
             charge_type=ChargeType.OPPORTUNITY,
             amount_charging_places=2,
@@ -184,21 +188,21 @@ class BaseTest:
             scenario=scenario,
             name="Milliardärsclub",
             name_short="HV1",
-            geom="POINT(13.400954 52.525008 0)",
+            geom=from_shape(Point(13.400954, 52.525008), srid=4326),
             is_electrified=False,
         )
         stop_7 = Station(
             scenario=scenario,
             name="Emil-Erpel-Statue",
             name_short="HV2",
-            geom="POINT(13.410954 52.520008 0)",
+            geom=from_shape(Point(13.410954, 52.520008), srid=4326),
             is_electrified=False,
         )
         stop_8 = Station(
             scenario=scenario,
             name="Rathaus",
             name_short="HV3",
-            geom="POINT(0 -2 4)",
+            geom=from_shape(Point(0, -2), srid=4326),
             is_electrified=False,
         )
 
