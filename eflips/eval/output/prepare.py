@@ -16,11 +16,99 @@ from eflips.model import (
     AreaType,
     Process,
     Depot,
+    Station,
+    VehicleType,
+    DrivetrainType,
 )
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import or_
 
+from eflips.eval.input.prepare import _station_to_coord
 from eflips.eval.output.util import _get_slot_occupancy
+
+
+def charging_station_coordinates(
+    scenario_id: int,
+    session: sqlalchemy.orm.session.Session,
+    station_ids: None | int | List[int] = None,
+) -> pd.DataFrame:
+    """
+    This function creates a dataframe that can be used to visualize the geographic distribution of charging stations. It creates
+    a dataframe with one row for each station and the following columns:
+
+    - station_id: the id of the station
+    - station_name: the name of the station
+    - coordinates: A (lat, lon) tuple with the coordinates of the station
+
+    :param scenario_id: The scenario id for which to create the dataframe
+    :param session: An sqlalchemy session to an eflips-model database
+    :param station_ids: A list of station ids to filter for. If None, all stations are included
+    :return: a pandas DataFrame
+    """
+    stations_q = (
+        session.query(Station)
+        .join(Event, Event.station_id == Station.id)
+        .filter(Station.scenario_id == scenario_id)
+        .filter(
+            Event.event_type.in_(
+                [EventType.CHARGING_DEPOT, EventType.CHARGING_OPPORTUNITY]
+            )
+        )
+        .distinct()
+    )
+    if station_ids is not None:
+        if isinstance(station_ids, int):
+            station_ids = [station_ids]
+        stations_q = stations_q.filter(Station.id.in_(station_ids))
+
+    result: List[Dict[str, int | float | str | datetime | Tuple[float, float]]] = []
+
+    for station in stations_q:
+        result.append(
+            {
+                "station_id": station.id,
+                "station_name": station.name,
+                "coordinates": _station_to_coord(station),
+            }
+        )
+
+    return pd.DataFrame(result)
+
+
+def depot_charger_count(
+    scenario_id: int,
+    session: sqlalchemy.orm.session.Session,
+    depot_ids: None | int | List[int] = None,
+) -> pd.DataFrame:
+    depots_q = session.query(Depot).filter(Depot.scenario_id == scenario_id)
+    if depot_ids is not None:
+        if isinstance(depot_ids, int):
+            depot_ids = [depot_ids]
+        depots_q = depots_q.filter(Depot.id.in_(depot_ids))
+
+    result = []
+    for depot in depots_q:
+        charging_areas = (
+            session.query(Area)
+            .filter(
+                Area.depot_id == depot.id,
+                Area.processes.any(Process.electric_power.isnot(None)),
+                Area.vehicle_type.has(
+                    VehicleType.drivetrain_type == DrivetrainType.BEV
+                ),
+            )
+            .all()
+        )
+        charger_count = sum(area.capacity for area in charging_areas)
+        result.append(
+            {
+                "depot_id": depot.id,
+                "charger_count": charger_count,
+                "depot_coordinate": _station_to_coord(depot.station),
+            }
+        )
+
+    return pd.DataFrame(result)
 
 
 def departure_arrival_soc(

@@ -65,12 +65,14 @@ def rotation_info(
     return fig
 
 
-def geographic_trip_plot(prepared_data: pd.DataFrame) -> folium.Map:
+def geographic_trip_plot(
+    prepared_data: pd.DataFrame,
+    charging_station_data: pd.DataFrame | None = None,
+    depot_charger_data: pd.DataFrame | None = None,
+) -> folium.Map:
     """
     This function visualizes the trips on a map using folium. The trips are lines between the departure and arrival
     stations.
-
-
 
     :param prepared_data: A Pandas dataframe with the following columns:
             - rotation_id: the id of the rotation
@@ -80,8 +82,20 @@ def geographic_trip_plot(prepared_data: pd.DataFrame) -> folium.Map:
             - originating_depot_id: the id of the originating depot
             - originating_depot_name: the name of the originating depot
             - distance: the distance of the route
-            - coordinates: An array of *(lon, lat)* tuples with the coordinates of the route - the shape if set, otherwise the stops
+            - coordinates: An array of *(lat, lon)* tuples with the coordinates of the route - the shape if set, otherwise the stops
             - line_name: the name of the line, which is the first part of the rotation name. Used for sorting
+    :param charging_station_data: Optional. The result of prepare.geographic_charging_station_plot(), a dataframe
+            with the following columns:
+            - station_id: the id of the station
+            - station_name: the name of the station
+            - coordinates: a (lat, lon) tuple with the coordinates of the station
+            If provided, charging stations are overlaid on the map as markers.
+    :param depot_charger_data: Optional. The result of output.prepare.depot_charger_count(), a dataframe
+            with the following columns:
+            - depot_id: the id of the depot
+            - charger_count: the total number of BEV charger slots in the depot
+            - depot_coordinate: a (lat, lon) tuple with the coordinates of the depot
+            If provided, depots are shown as red warehouse markers with the charger count label beside them.
     :return: A folium map object
     """
     # Use seaborn to create a color palette for each originating depot
@@ -114,6 +128,62 @@ def geographic_trip_plot(prepared_data: pd.DataFrame) -> folium.Map:
         color = colors[row["originating_depot_name"]]
         pl = folium.PolyLine(row["coordinates"], color=color, weight=2.5, opacity=1)
         map.add_child(pl)
+
+    if charging_station_data is not None:
+        for i, row in charging_station_data.iterrows():
+            folium.Marker(
+                location=[row["coordinates"][0], row["coordinates"][1]],
+                popup=row["station_name"],
+                icon=folium.Icon(color="blue", icon="charging-station", prefix="fa"),
+            ).add_to(map)
+
+    if depot_charger_data is not None:
+        for i, row in depot_charger_data.iterrows():
+            coord = row["depot_coordinate"]
+            folium.Marker(
+                location=[coord[0], coord[1]],
+                popup=f"Depot {row['depot_id']}: {row['charger_count']} chargers",
+                icon=folium.Icon(color="red", icon="warehouse", prefix="fa"),
+            ).add_to(map)
+            folium.Marker(
+                location=[coord[0], coord[1]],
+                icon=folium.DivIcon(
+                    html=(
+                        f'<div style="font-size:11px;font-weight:bold;color:white;'
+                        f"background:rgba(0,0,0,0.55);padding:1px 4px;border-radius:3px;"
+                        f'white-space:nowrap;margin-left:22px;margin-top:-26px;">'
+                        f'&#9889; {row["charger_count"]}</div>'
+                    ),
+                    icon_anchor=(0, 0),
+                ),
+            ).add_to(map)
+
+    return map
+
+
+def geographic_charging_station_plot(prepared_data: pd.DataFrame) -> folium.Map:
+    """
+    This function visualizes the charging stations on a map using folium. The charging stations are points on the map.
+
+    :param prepared_data: A Pandas dataframe with the following columns:
+            - station_id: the id of the station
+            - station_name: the name of the station
+            - coordinates: a (lat, lon) tuple with the coordinates of the station
+    :return: A folium map object
+    """
+    # Obtain the mean latitude and longitude for the map center
+    lat_center = prepared_data["coordinates"].apply(lambda c: c[0]).mean()
+    lon_center = prepared_data["coordinates"].apply(lambda c: c[1]).mean()
+
+    map = folium.Map(
+        location=[lat_center, lon_center], zoom_start=11, tiles="Cartodb dark_matter"
+    )
+    for i, row in prepared_data.iterrows():
+        folium.Marker(
+            location=[row["coordinates"][0], row["coordinates"][1]],
+            popup=row["station_name"],
+            icon=folium.Icon(color="blue", icon="charging-station", prefix="fa"),
+        ).add_to(map)
     return map
 
 
