@@ -582,19 +582,20 @@ simpy = ">=4.0.1,<5.0.0"
 
 [[package]]
 name = "eflips-depot"
-version = "4.11.0"
+version = "4.13.2"
 description = "Depot Simulation for eFLIPS"
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["dev"]
+markers = "python_version == \"3.10\""
 files = [
-    {file = "eflips_depot-4.11.0-py3-none-any.whl", hash = "sha256:c4f1902948b3098b3a193e244e27275bbebb4c2cb7370fa3a7072a82c58f3cde"},
-    {file = "eflips_depot-4.11.0.tar.gz", hash = "sha256:fd778afeb9fbfda8461e6105f4cb161da370aa2dee26a64a1a1ed7248f59de8e"},
+    {file = "eflips_depot-4.13.2-py3-none-any.whl", hash = "sha256:d7794848945ae962e9f5e785971e3e777baa7172f6101f774e91297fabe7b44e"},
+    {file = "eflips_depot-4.13.2.tar.gz", hash = "sha256:b035ee4674ec756568b00effa75c6c1142ab822eb8f44159420e7edb85a1e31d"},
 ]
 
 [package.dependencies]
 eflips = ">=0.1.3,<0.2.0"
-eflips-model = ">=8.1.0,<9.0.0"
+eflips-model = ">=10.0.0,<11.0.0"
 eflips-opt = ">=0.3.0,<0.4.0"
 pandas = ">=2.2.0,<3.0.0"
 scipy = ">=1.14.0,<2.0.0"
@@ -604,42 +605,70 @@ xlrd = "<=1.2.0"
 xlsxwriter = ">=3.1.9,<4.0.0"
 
 [[package]]
-name = "eflips-model"
-version = "8.1.0"
-description = "A common data model for the eflips family of electric vehicle simulation & optimization tools."
+name = "eflips-depot"
+version = "4.15.12"
+description = "Depot Simulation for eFLIPS"
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = "<3.14,>=3.11"
 groups = ["dev"]
+markers = "python_version >= \"3.11\""
 files = [
-    {file = "eflips_model-8.1.0-py3-none-any.whl", hash = "sha256:d6669214609c2abbe6d180c975b0cecaf910d7ed21980b3664d542454f8c0d3d"},
-    {file = "eflips_model-8.1.0.tar.gz", hash = "sha256:0c2e07857fd5aab69fd8281a3e2f7ae8c9747ceef0b02416b5fd7c83c8299bba"},
+    {file = "eflips_depot-4.15.12-py3-none-any.whl", hash = "sha256:74c8536f5732fcd28be0dd225b3ed977d156b2748fb0a2ff0934db403e5b9138"},
+    {file = "eflips_depot-4.15.12.tar.gz", hash = "sha256:7e61fae6e702b33852bc64c6cfdaf9d8688d722471719ac341572337f53955a8"},
 ]
 
 [package.dependencies]
-alembic = ">=1.12.1,<2.0.0"
-geoalchemy2 = ">=0.14.2,<0.15.0"
-numpy = ">=2.2.0,<3.0.0"
+eflips = ">=0.1.3,<0.2.0"
+eflips-model = ">=10.0.0,<11.0.0"
+eflips-opt = ">=0.3.6,<0.4.0"
 pandas = ">=2.2.0,<3.0.0"
-psycopg2-binary = ">=2.9.10,<3.0.0"
-pyproj = ">=3.7.1,<4.0.0"
-shapely = ">=2.1.0,<3.0.0"
-sqlalchemy = ">=2.0.23,<3.0.0"
+scipy = ">=1.14.0,<2.0.0"
+simpy = ">=4.0.1,<5.0.0"
+tqdm = ">=4.67.0,<5.0.0"
+xlrd = "<=1.2.0"
+xlsxwriter = ">=3.1.9,<4.0.0"
+
+[[package]]
+name = "eflips-model"
+version = "10.0.3"
+description = "A common data model for the eflips family of electric vehicle simulation & optimization tools."
+optional = false
+python-versions = "^3.10"
+groups = ["dev"]
+files = []
+develop = false
+
+[package.dependencies]
+alembic = "^1.12.1"
+geoalchemy2 = "^0.14.2"
+numpy = "^2.2.0"
+pandas = "^2.2.0"
+psycopg2-binary = "^2.9.10"
+pyproj = "^3.7.1"
+shapely = "^2.1.0"
+sqlalchemy = "^2.0.23"
+
+[package.source]
+type = "git"
+url = "https://github.com/mpm-tu-berlin/eflips-model.git"
+reference = "personal/shuyao_heterogeneous_fleet"
+resolved_reference = "924d660b3eb3447b7ce687e9d0ce0e66d0a53bc9"
 
 [[package]]
 name = "eflips-opt"
-version = "0.3.1"
+version = "0.3.20"
 description = "A collection of pre-simulation optimization algorithms for eFLIPS."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["dev"]
 files = [
-    {file = "eflips_opt-0.3.1-py3-none-any.whl", hash = "sha256:2188b8325de9e8f44cf9049e510b1ae53904a07652451db10b4690e737eaf8c7"},
-    {file = "eflips_opt-0.3.1.tar.gz", hash = "sha256:cc9e40c249f49497058c9a76c1e59cd23d920ca603c8ceadb16e41c701bd4417"},
+    {file = "eflips_opt-0.3.20-py3-none-any.whl", hash = "sha256:a966ef7f5c491e6a6850c81a546f913d4a846c388eef9156b706228795e40c79"},
+    {file = "eflips_opt-0.3.20.tar.gz", hash = "sha256:64e3d91c4b735b9f46ad70c1049ba1bdcdbfaeaffc2d3f5878140428092b74ab"},
 ]
 
 [package.dependencies]
 dash-cytoscape = ">=1.0.2,<2.0"
-eflips-model = ">=3.0.0,<9.0.0"
+eflips-model = ">=10.0.3,<11.0.0"
 eflips-schedule-rust = ">=2.0.1,<3.0"
 gurobipy = ">=12.0.1,<13.0"
 kaleido = "0.2.1"
@@ -648,6 +677,7 @@ numpy = ">=1.26.4,<3.0"
 openrouteservice = ">=2.3.3,<3.0"
 pandas = ">=2.1,<3.0"
 plotly = ">=5.22.0,<6.0"
+polyline = ">=2.0.3,<3.0.0"
 pyomo = ">=6.7.1,<7.0"
 scipy = ">=1.14.0,<2.0"
 shapely = ">=2.0.3,<3.0"
@@ -2138,7 +2168,7 @@ version = "2.0.4"
 description = "A Python implementation of Google's Encoded Polyline Algorithm Format."
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "polyline-2.0.4-py3-none-any.whl", hash = "sha256:a4e0c15b8ecb32915559f8cf210f1f8c2f5cc53d3cd32c91d7c1668d6e936e10"},
     {file = "polyline-2.0.4.tar.gz", hash = "sha256:f05ade694522bf1720febebe1672f820f43a13c6a1664751e7769d47e8ca9b1b"},
@@ -3251,4 +3281,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <3.14"
-content-hash = "23a0464cf0c3a08d0e4dddd15ef1a23d4b3ef80b50b79532db2696fbb82b27e6"
+content-hash = "49ed1b4b2d828d8a4b9d5f72692ab42196e9140262fc4f6dcbfddf4644d1479f"

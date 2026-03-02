@@ -36,6 +36,9 @@ pandas-stubs = "^2.2.0.240218"
 coverage = "^7.4.4"
 eflips-depot = "^4.11.0"
 typing-extensions = "^4.15.0"
+eflips-model = {git = "https://github.com/mpm-tu-berlin/eflips-model.git", branch = "personal/shuyao_heterogeneous_fleet"}
+
+#eflips-model = {path = "../eflips-model", develop = true}
 
 [build-system]
 requires = ["poetry-core"]
