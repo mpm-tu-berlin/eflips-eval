@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 import pytz
-from eflips.model import Area, Vehicle, Depot
+from eflips.model import Area, Line, Vehicle, Depot
 
 import eflips.eval.input.prepare as input_prepare
 import eflips.eval.output.prepare as output_prepare
@@ -47,6 +47,24 @@ if __name__ == "__main__":
     prepared_data = input_prepare.rotation_info(SCENARIO_ID, session)
     fig = input_visualize.rotation_info(prepared_data)
     fig.show()
+
+    # Example of using the time-distance diagram (Bildfahrplan), one line at a time. The
+    # height is worth setting: a whole service day at the default height squeezes a
+    # half-hour journey into a nearly horizontal line.
+    for line in session.query(Line).filter(Line.scenario_id == SCENARIO_ID):
+        prepared_data = input_prepare.time_distance_diagram(line.id, session)
+        if prepared_data.empty:
+            continue
+        fig = input_visualize.time_distance_diagram(prepared_data, height=1400)
+        # The package's visualize functions set no title; add one from the data if wanted.
+        passenger_trips = prepared_data.loc[
+            prepared_data["trip_kind"] == "passenger", "trip_id"
+        ].nunique()
+        fig.update_layout(
+            title=f"Line {line.name}: {passenger_trips} passenger trips, "
+            f"{prepared_data['rotation_id'].nunique()} rotations"
+        )
+        fig.show()
 
     # Example of using the depot event visualization
     prepared_data = output_prepare.depot_event(SCENARIO_ID, session)
