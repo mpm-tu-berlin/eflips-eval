@@ -241,7 +241,7 @@ def _split_stations_into_chunks(
 
 
 def _combine_route_geometries(
-    geometries: List[List[Tuple[float, float]]]
+    geometries: List[List[Tuple[float, float]]],
 ) -> List[Tuple[float, float]]:
     """
     Combine multiple route geometries into a single continuous route.
