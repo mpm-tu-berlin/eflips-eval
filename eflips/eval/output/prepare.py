@@ -259,10 +259,14 @@ def power_and_occupancy(
 
     # Create a 1-second interval time series
     utc = zoneinfo.ZoneInfo("UTC")
+    # The conversion to numpy's own types is explicit because numpy's stubs have no overload
+    # taking datetime and timedelta: arange converts them itself, but only at runtime, and to
+    # microsecond precision -- which is what np.datetime64 and np.timedelta64 give here too,
+    # so the resulting array is the same as it ever was.
     time: npt.NDArray[np.datetime64] = np.arange(
-        start_time.astimezone(utc).replace(tzinfo=None),
-        end_time.astimezone(utc).replace(tzinfo=None),
-        timedelta(seconds=temporal_resolution),
+        np.datetime64(start_time.astimezone(utc).replace(tzinfo=None)),
+        np.datetime64(end_time.astimezone(utc).replace(tzinfo=None)),
+        np.timedelta64(timedelta(seconds=temporal_resolution)),
     )
     time_as_unix = np.arange(
         start_time.timestamp(), end_time.timestamp(), temporal_resolution
