@@ -105,7 +105,7 @@ def departure_arrival_soc(prepared_data: pd.DataFrame) -> go.Figure:
         color="vehicle_type_name",
         hover_data=["rotation_name"],
         labels={
-            "soc": "State of Charge (%)",
+            "soc": "Net State of Charge (%)",
             "time": "Time",
             "rotation_name": "Rotation Name",
             "vehicle_type_name": "Vehicle Type",
@@ -165,14 +165,14 @@ def depot_event(
         labels={
             "time_start": "Start Time",
             "time_end": "End Time",
-            "soc_start": "Start State of Charge (%)",
-            "soc_end": "End State of Charge (%)",
+            "soc_start": "Start Net State of Charge (%)",
+            "soc_end": "End Net State of Charge (%)",
             "area_id": "Area ID",
             "vehicle_id": "Vehicle ID",
         },
     )
     if color_scheme == "soc":
-        legend_title = "State of Charge"
+        legend_title = "Net State of Charge"
         fig.update_layout(coloraxis=dict(colorbar=dict(orientation="h", y=-0.15)))
     else:
         legend_title = color_scheme.replace("_", " ").title()
@@ -317,7 +317,7 @@ def vehicle_soc(
         prepared_data,
         x="time",
         y="soc",
-        labels={"time": "Time", "soc": "State of Charge (%)"},
+        labels={"time": "Time", "soc": "Net State of Charge (%)"},
     )
 
     colors = ["red", "green", "blue"]
