@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": ["Bash(poetry run black:*)", "Bash(poetry run mypy:*)", "Bash(poetry check:*)", "Bash(git diff:*)"],
+    "ask": ["Bash(poetry add:*)", "Bash(poetry run pytest:*)", "Bash(git push:*)"]
+  },
+  "hooks": {
+    "PreToolUse": [{ "matcher": "Edit|Write",
+      "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-files.sh" }] }],
+    "PostToolUse": [{ "matcher": "Edit|Write",
+      "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format.sh" }] }],
+    "Stop": [{
+      "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/stop-gate.sh" }] }]
+  }
+}
