@@ -458,7 +458,7 @@ def depot_activity_animation(
     area_dict, fig = depot_layout(area_blocks)
     ani = animation.FuncAnimation(
         fig,
-        animate,  # type: ignore
+        animate,
         frames=frames_end,
         interval=1,
         fargs=(area_dict, area_occupancy, animation_range[0], time_resolution),
