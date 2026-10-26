@@ -9,7 +9,7 @@
 project = "eflips-eval"
 copyright = "2024, Technische Universität Berlin"
 author = "Ludger Heide"
-release = "1.9.1"
+release = "1.9.2"
 
 
 # -- General configuration ---------------------------------------------------
