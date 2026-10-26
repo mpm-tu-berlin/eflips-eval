@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eflips-eval"
-version = "1.10.0"
+version = "1.11.0"
 description = ""
 authors = [
     "Ludger Heide <ludger.heide@lhtechnologies.de>",
@@ -12,7 +12,7 @@ include= ["LICENSE.md"]
 
 
 [tool.poetry.dependencies]
-python = ">=3.11, <3.14"
+python = ">=3.11,<3.15"
 pandas = "^2.2.0"
 plotly = "^5.19.0"
 dash-cytoscape = "^1.0.1"
@@ -31,10 +31,12 @@ pytest-asyncio = "^1.4.0"
 pytest-pycharm = "^0.7.0"
 pre-commit = "^3.5.0"
 sphinx-autoapi = "^3.0.0"
+# sphinx-autoapi 3.5 cannot parse files with astroid 4
+astroid = "<4.0"
 sphinx-paramlinks = "^0.6.0"
 pandas-stubs = "^2.2.0.240218"
 coverage = "^7.4.4"
-eflips-depot = "^4.11.0"
+eflips-depot = ">=4.20.0,<5.0.0"
 typing-extensions = "^4.15.0"
 
 [build-system]
